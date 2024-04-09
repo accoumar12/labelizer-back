@@ -21,6 +21,7 @@ venv
 docs.zip
 archive.zip
 data/
+images/
 
 # vim temporary files
 *~

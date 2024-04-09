@@ -13,7 +13,7 @@ class LabelizerPairsResponse(BaseModel):
     left_id: str
     right_id: str
 
-class TripletLabelized(BaseModel):
+class (BaseModel):
     id: str
     ref_id: str
     left_id: str
