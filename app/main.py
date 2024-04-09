@@ -1,4 +1,5 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Form
+from .models import LabelizerPairsResponse, SelectedItemType
 
 app = FastAPI()
 
@@ -12,12 +13,10 @@ def make_labelizer_pairs(user_id: str) -> LabelizerPairsResponse:
         right_id='right_id',
     )
 
-
 @app.post('/api/labelizer/pairs')
 def set_labelizer_pairs(user_id: str, request_id: str = Form(), label: SelectedItemType = Form()) -> None:
-    
     # todo store selected ref with selected id
-    
+    ...
 
 @app.get("/api/labelizer/images/{image_id}")
 def get_image(user_id: str, image_id: str):

@@ -9,13 +9,13 @@ class SelectedItemType(str, Enum):
 
 class LabelizerPairsResponse(BaseModel):
     request_id: str
-    ref_id: str
+    reference_id: str
     left_id: str
     right_id: str
 
-class (BaseModel):
+class TripletLabelized(BaseModel):
     id: str
-    ref_id: str
+    reference_id: str
     left_id: str
     right_id: str
     label: SelectedItemType = None
