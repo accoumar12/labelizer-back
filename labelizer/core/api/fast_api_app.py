@@ -9,23 +9,20 @@ from starlette.exceptions import HTTPException
 from labelizer import APP_VERSION
 from labelizer.core.api.logging import setup_logging
 from labelizer.core.api.middlewares import RequestContextLogMiddleware
-
 from labelizer.routes import router as label_router
 
 description = """
-TODO
+API used to generate and manage triplets of images for labeling.
 """
 
 ROOT_PATH = "/api/labelizer/v1"
-
-
 
 def setup_app() -> FastAPI:
     """
     Initialize fastapi app.
     """
     _app = FastAPI(
-        title="PROACT Logistics Service",
+        title="Labelizer API",
         description=description,
         version=APP_VERSION,
         openapi_url=ROOT_PATH + "/openapi.json",
