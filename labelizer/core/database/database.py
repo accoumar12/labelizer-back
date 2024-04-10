@@ -1,16 +1,13 @@
-import os
-import sqlite3
-from pathlib import Path
+from sqlalchemy import create_engine
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker
 
-database_root_path = Path(os.environ['DATABASE_ROOT_PATH'])
+# Choices inspired by the FastAPI tutorial: https://fastapi.tiangolo.com/tutorial/sql-databases/
+SQLALCHEMY_DATABASE_URL = "sqlite:///./database/labelizer.db"
 
-class DatabaseConnection:
-    def __enter__(self):
-        self.conn = sqlite3.connect(f'{database_root_path}/my_database.db')
-        return self.conn
+engine = create_engine(
+    SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False}
+)
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        self.conn.close()
-
-def get_db():
-    return DatabaseConnection()
+Base = declarative_base()
