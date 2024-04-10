@@ -6,11 +6,20 @@ from fastapi.responses import FileResponse
 import database.crud
 import database.models
 import database.schemas
-
-from .database.init_database import SessionLocal, engine
-from .models import LabelizerPairsResponse, SelectedItemType
+from database.init_database import SessionLocal, engine
 
 app = FastAPI()
+
+database.models.Base.metadata.create_all(bind=engine)
+
+# Dependency
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
 
 
 # @app.get('/api/labelizer/pairs')
