@@ -10,16 +10,20 @@ class SelectedItemType(str, Enum):
     BOTH = 'both'
 
 class LabelizerPairsResponse(BaseModel):
-    id: int
     request_id: str
     reference_id: str
     left_id: str
-    right_id: str
+    right_id: str 
+    
+    class Config:
+        orm_mode = True
 
 class TripletLabelized(BaseModel):
-    id: int
     reference_id: str
     left_id: str
     right_id: str
-    label: SelectedItemType = None
-    user_id: str = None
+    label: SelectedItemType
+    user_id: str
+
+    class Config:
+        orm_mode = True

@@ -3,7 +3,7 @@ from enum import Enum
 from sqlalchemy import Boolean, Column, Integer, String
 from sqlalchemy.orm import relationship
 
-from .database import Base
+from database.init_database import Base
 
 
 # Useful type to labelize the triplet
@@ -23,8 +23,8 @@ class LabelizerPairsResponse(Base):
     left_id = Column(String, index=True)
     right_id = Column(String, index=True)
 
-class TripletLabelized(Base):
-    __tablename__ = 'triplet_labelized'
+class LabelizedTriplet(Base):
+    __tablename__ = 'labelized_triplets'
     
     id = Column(Integer, primary_key=True, index=True)
     reference_id = Column(String, index=True)
