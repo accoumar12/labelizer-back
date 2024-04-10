@@ -20,10 +20,6 @@ async def get_image(user_id:str, image_id:str):
 )
 async def make_labelizer_triplet(
 ) -> LabelizerTripletResponse:
-    """
-    TODO
-    """
-    # todo get from db with a logic...
     # with get_db() as session:
     #     result = get_triplet(session)
 
