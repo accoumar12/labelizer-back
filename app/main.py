@@ -1,10 +1,14 @@
-from fastapi import FastAPI, Form
+from pathlib import Path
+
+from fastapi import FastAPI, Form, HTTPException
+from fastapi.responses import FileResponse
+
 from .models import LabelizerPairsResponse, SelectedItemType
 
 app = FastAPI()
 
 @app.get('/api/labelizer/pairs')
-def make_labelizer_pairs(user_id: str) -> LabelizerPairsResponse:
+def get_labelizer_pairs(user_id: str) -> LabelizerPairsResponse:
     # todo generate pairs
     return LabelizerPairsResponse(
         request_id='request_id',
@@ -13,11 +17,15 @@ def make_labelizer_pairs(user_id: str) -> LabelizerPairsResponse:
         right_id='right_id',
     )
 
+@app.get('/api/labelizer/images/{image_id}')
+def get_image(user_id: str, image_id: str) -> FileResponse:
+    image_path = Path(f'/images/{image_id}.png')
+    if not image_path.exists():
+        raise HTTPException(status_code=404, detail='Image not found')
+    return FileResponse(str(image_path))
+
 @app.post('/api/labelizer/pairs')
 def set_labelizer_pairs(user_id: str, request_id: str = Form(), label: SelectedItemType = Form()) -> None:
     # todo store selected ref with selected id
     ...
 
-@app.get("/api/labelizer/images/{image_id}")
-def get_image(user_id: str, image_id: str):
-    return FileResponse(f"images/{image_id}.png")
