@@ -13,4 +13,5 @@ class LabelizedTriplet(Base):
     right_id = Column(String, index=True)
     # By default, the label is None, meaning that the user has not selected any option
     label = Column(Enum(SelectedItemType), index=True)
+    # Same for the user_id
     user_id = Column(String, index=True)

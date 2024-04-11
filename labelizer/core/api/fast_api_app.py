@@ -23,6 +23,7 @@ def setup_app() -> FastAPI:
     Initialize fastapi app.
     """
     models.Base.metadata.create_all(bind=engine)
+
     _app = FastAPI(
         title="Labelizer API",
         description=description,
