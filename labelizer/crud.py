@@ -12,6 +12,7 @@ def create_labelized_triplet(db: Session, triplet: schemas.LabelizedTriplet):
     db.refresh(db_triplet)
     return db_triplet
 
+
 def create_labelized_triplets(db: Session, triplets: pd.DataFrame):
     for _, triplet in triplets.iterrows():
         create_labelized_triplet(db, schemas.LabelizedTriplet(**triplet.to_dict()))

@@ -5,8 +5,8 @@ from labelizer.utils import SelectedItemType
 
 
 class LabelizedTriplet(Base):
-    __tablename__ = 'labelized_triplets'
-    
+    __tablename__ = "labelized_triplets"
+
     id = Column(Integer, primary_key=True, index=True)
     reference_id = Column(String, index=True)
     left_id = Column(String, index=True)
@@ -24,6 +24,5 @@ class LabelizedTriplet(Base):
             "left_id": self.left_id,
             "right_id": self.right_id,
             "label": self.label,
-            "user_id": self.user_id
+            "user_id": self.user_id,
         }
-    
