@@ -4,11 +4,13 @@ from typing import Callable
 
 from fastapi import FastAPI
 from fastapi.exceptions import ValidationException
+from labellizer.core.database.init_database import engine
 from starlette.exceptions import HTTPException
 
 from labelizer import APP_VERSION
 from labelizer.core.api.logging import setup_logging
 from labelizer.core.api.middlewares import RequestContextLogMiddleware
+from labelizer.models import models
 from labelizer.routes import router as label_router
 
 description = """
@@ -21,6 +23,7 @@ def setup_app() -> FastAPI:
     """
     Initialize fastapi app.
     """
+    models.Base.metadata.create_all(bind=engine)
     _app = FastAPI(
         title="Labelizer API",
         description=description,
