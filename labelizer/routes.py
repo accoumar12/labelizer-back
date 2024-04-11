@@ -1,3 +1,6 @@
+import os
+from pathlib import Path
+
 from fastapi import APIRouter, Depends, status
 from starlette.responses import FileResponse
 
@@ -5,6 +8,9 @@ from labelizer.core.database.init_database import SessionLocal
 from labelizer.model import LabelizerTripletResponse, SelectedItemType
 
 router = APIRouter(tags=["Studies Management"])
+
+# IMAGES_PATH has to be set as an environment variable
+images_path = Path(os.environ['IMAGES_PATH'])
 
 def get_db():
     db = SessionLocal()
@@ -14,12 +20,12 @@ def get_db():
         db.close()
 
 @router.get(
-    "/images",
+    "/images/{image_id}",
     summary="TODO",
     status_code=status.HTTP_200_OK,
 )
-async def get_image(user_id:str, image_id:str) -> FileResponse:
-    return FileResponse(f'/images/{image_id}')
+async def get_image(image_id:str) -> FileResponse:
+    return FileResponse(f'{images_path}/{image_id}')
 
 @router.get(
     "/triplet",
