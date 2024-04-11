@@ -88,7 +88,7 @@ def upload_data(file: UploadFile = File(...), db: Session = Depends(get_db)):
         with zipfile.ZipFile(file.file, 'r') as zip_ref:
             zip_ref.extractall('data')
         df = pd.read_csv(f'{uploaded_data_path}/triplets.csv')
-        crud.append_triplets(db, df)  
+        crud.create_labelized_triplets(db, df)  
 
         # # Add the new images
         # temp_images_path = os.path.join('temp', 'images')
