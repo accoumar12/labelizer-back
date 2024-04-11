@@ -4,7 +4,7 @@ from labelizer.utils import SelectedItemType
 
 
 class LabelizerTripletResponse(BaseModel):
-    id: str
+    id: int
     reference_id: str
     left_id: str
     right_id: str 

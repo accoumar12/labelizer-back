@@ -10,7 +10,7 @@ from labelizer.core.database.init_database import SessionLocal
 from labelizer.utils import SelectedItemType
 
 router = APIRouter(tags=["Studies Management"])
-t
+
 # IMAGES_PATH has to be set as an environment variable
 images_path = Path(os.environ['IMAGES_PATH'])
 
@@ -26,7 +26,7 @@ def get_db():
         
 @router.get(
     "/images/{image_id}",
-    summary="TODO",
+    summary="Retrieve an image by its id.",
     status_code=status.HTTP_200_OK,
 )
 async def get_image(image_id:str) -> FileResponse:
@@ -35,7 +35,7 @@ async def get_image(image_id:str) -> FileResponse:
 
 @router.get(
     "/triplet",
-    summary="TODO",
+    summary="Get the first unlabeled triplet, in order to propose it to the user.",
     status_code=status.HTTP_200_OK,
 )
 def make_triplet(
@@ -58,6 +58,3 @@ def set_triplet_label(
     label:SelectedItemType,
 ) -> None:
     ...     
-
-    user_id = "email"
-    
