@@ -2,6 +2,7 @@ import os
 from pathlib import Path
 
 from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 from starlette.responses import FileResponse
 
@@ -9,7 +10,7 @@ from labelizer import crud, schemas
 from labelizer.core.database.init_database import SessionLocal
 from labelizer.utils import SelectedItemType
 
-router = APIRouter(tags=["Studies Management"])
+router = APIRouter(tags=["Triplet Management"])
 
 # IMAGES_PATH has to be set as an environment variable
 images_path = Path(os.environ['IMAGES_PATH'])
@@ -49,12 +50,17 @@ def make_triplet(
 
 @router.post(
     "/triplet",
-    summary="TODO",
+    summary="Set the label of a triplet according to the user's choice.",
     status_code=status.HTTP_200_OK,
 )
 def set_triplet_label(
-    # user_id:str,
+    #TODO add user_id:str,
     triplet_id:str,
     label:SelectedItemType,
-) -> None:
-    ...     
+    db: Session = Depends(get_db)
+) -> JSONResponse:
+    try:
+        crud.set_triplet_label(db, triplet_id, label)
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+    return JSONResponse(content={"message": "Label set successfully"}, status_code=status.HTTP_200_OK)

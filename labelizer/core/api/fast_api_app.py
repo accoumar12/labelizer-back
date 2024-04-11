@@ -13,7 +13,7 @@ from labelizer.core.database.init_database import engine
 from labelizer.routes import router as label_router
 
 description = """
-API used to generate and manage triplets of images for labeling.
+API used to manage the labeling of triplets of images.
 """
 
 ROOT_PATH = "/api/labelizer/v1"
