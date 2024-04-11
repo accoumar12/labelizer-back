@@ -2,6 +2,9 @@
 run:
 	python main.py
 
+## Post the seed data into the database
+seed:
+	python labelizer/usecases/seed_data.py
 #################################################################################
 # Self Documenting Commands                                                     #
 #################################################################################
