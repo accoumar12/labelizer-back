@@ -84,16 +84,18 @@ def download_db(db: Session = Depends(get_db)) -> FileResponse:
 @router.post("/upload_data", summary='Upload new data, including images and triplets.', status_code=status.HTTP_201_CREATED)
 def upload_data(file: UploadFile = File(...), db: Session = Depends(get_db)):
     if file.filename.endswith('.zip'):
-        # Extract the csv file, and add the triplets to the database
+        # Extract the csv file
         with zipfile.ZipFile(file.file, 'r') as zip_ref:
             zip_ref.extractall('data')
+
+        # Add the triplets to the database
         df = pd.read_csv(f'{uploaded_data_path}/triplets.csv')
         crud.create_labelized_triplets(db, df)  
 
-        # # Add the new images
-        # temp_images_path = os.path.join('temp', 'images')
-        # for filename in os.listdir(temp_images_path):
-        #     shutil.move(os.path.join(temp_images_path, filename), os.path.join(images_path, filename))
+        # Add the new images
+        uploaded_images_path = os.path.join(uploaded_data_path, 'images')
+        for filename in os.listdir(uploaded_images_path):
+            shutil.move(os.path.join(uploaded_images_path, filename), os.path.join(images_path, filename))
 
 @router.delete("/delete_db", summary="Delete the database.", status_code=status.HTTP_204_NO_CONTENT)
 def delete_db(db: Session = Depends(get_db)):
