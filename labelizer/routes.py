@@ -104,7 +104,7 @@ def download_db(db: Session = Depends(get_db)) -> FileResponse:
     summary="Upload new data, including images and triplets.",
     status_code=status.HTTP_201_CREATED,
 )
-def upload_data(file: UploadFile = File(...), db: Session = Depends(get_db)):
+def upload_data(file: UploadFile = File(...), db: Session = Depends(get_db)) -> None:
     if file.filename.endswith(".zip"):
         # Extract the csv file
         with zipfile.ZipFile(file.file, "r") as zip_ref:
@@ -126,5 +126,5 @@ def upload_data(file: UploadFile = File(...), db: Session = Depends(get_db)):
 @router.delete(
     "/delete_db", summary="Delete the database.", status_code=status.HTTP_204_NO_CONTENT
 )
-def delete_db(db: Session = Depends(get_db)):
+def delete_db(db: Session = Depends(get_db)) -> None:
     crud.delete_all_data(db)
