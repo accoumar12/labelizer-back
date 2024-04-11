@@ -22,7 +22,8 @@ class LabelizedTriplet(BaseModel):
     reference_id: str
     left_id: str
     right_id: str
-    label: SelectedItemType
+    # By default, the label is None, meaning that the user has not selected any option
+    label: SelectedItemType = None
     user_id: str
 
     class Config:

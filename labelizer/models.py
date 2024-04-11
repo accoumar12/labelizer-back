@@ -11,12 +11,6 @@ class SelectedItemType(enum.Enum):
     DONT_KNOW = 'dont_know'
     #? Add an option if the two left and right items tend to be the most similar, make it more complex for the next iteration
 
-class LabelizerTripletResponse:
-    request_id: str
-    reference_id: str
-    left_id: str
-    right_id: str
-
 class LabelizedTriplet(Base):
     __tablename__ = 'labelized_triplets'
     
@@ -24,5 +18,6 @@ class LabelizedTriplet(Base):
     reference_id = Column(String, index=True)
     left_id = Column(String, index=True)
     right_id = Column(String, index=True)
+    # By default, the label is None, meaning that the user has not selected any option
     label = Column(Enum(SelectedItemType), index=True)
     user_id = Column(String, index=True)
