@@ -1,3 +1,4 @@
+import pandas as pd
 from sqlalchemy.orm import Session
 
 from labelizer import models, schemas
@@ -21,7 +22,10 @@ def set_triplet_label(db: Session, triplet_id: int, label: SelectedItemType):
     triplet.label = label
     db.commit()
 
-# We must be careful not to directly output the database objects because we want the values in the end in our csv file
+def append_triplets(db: Session, triplets: pd.DataFrame):
+    for _, triplet in triplets.iterrows():
+        create_labelized_triplet(db, schemas.LabelizedTriplet(**triplet.to_dict()))
+
 def get_all_data(db: Session):
     return [triplet.to_dict() for triplet in db.query(models.LabelizedTriplet).all()]
 

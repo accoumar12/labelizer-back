@@ -1,8 +1,10 @@
 import os
+import shutil
+import zipfile
 from pathlib import Path
 
 import pandas as pd
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 from starlette.responses import FileResponse
@@ -13,10 +15,16 @@ from labelizer.utils import SelectedItemType
 
 router = APIRouter(tags=["Triplet Management"])
 
-# IMAGES_PATH has to be set as an environment variable
-images_path = Path(os.environ['IMAGES_PATH'])
+# ROOT_PATH has to be set as an environment variable, this is the path to the root of the project
+root_path = Path(os.environ['ROOT_PATH'])
 
-#TODO Add endpoint that downloads the database in csv format or excell, another one that appends the database with new triplets (zip as parameter, a folder images and a triplet.csv file, another one that deletes the database. All this for simplicity of use. Add a database parameter.
+# Path to the images folder
+images_path = os.path.join(root_path, 'images')
+
+# Path to the data folder, where the uploaded data is stored before being processed
+uploaded_data_path = os.path.join(root_path, 'data', 'data')
+
+# TODO: Add a parameter for the database used
 
 # Dependency
 def get_db():
@@ -37,7 +45,7 @@ async def get_image(image_id:str) -> FileResponse:
 
 @router.get(
     "/triplet",
-    summary="Get the first unlabeled triplet, in order to propose it to the user.",
+    summary="Get the triplet (it is actually the first unlabeled triplet).",
     status_code=status.HTTP_200_OK,
 )
 def make_triplet(
@@ -66,21 +74,27 @@ def set_triplet_label(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
     return JSONResponse(content={"message": "Label set successfully"}, status_code=status.HTTP_200_OK)
 
-@router.get("/download_db", summary="Download all the database in the csv format", status_code=status.HTTP_200_OK)
+@router.get("/download_db", summary="Download all the database in the csv format.", status_code=status.HTTP_200_OK)
 def download_db(db: Session = Depends(get_db)) -> FileResponse:
     data = crud.get_all_data(db)  
     df = pd.DataFrame(data)
     df.to_csv('database.csv')
     return FileResponse('database.csv')
 
-# @router.post("/upload_triplets", status_code=status.HTTP_201_CREATED)
-# async def upload_triplets(file: UploadFile = File(...), db: Session = Depends(get_db)):
-#     if file.filename.endswith('.zip'):
-#         with zipfile.ZipFile(file.file, 'r') as zip_ref:
-#             zip_ref.extractall('temp')
-#         df = pd.read_csv('temp/triplet.csv')
-#         crud.append_data(db, df.to_dict())  # You need to implement this function
+@router.post("/upload_data", summary='Upload new data, including images and triplets.', status_code=status.HTTP_201_CREATED)
+def upload_data(file: UploadFile = File(...), db: Session = Depends(get_db)):
+    if file.filename.endswith('.zip'):
+        # Extract the csv file, and add the triplets to the database
+        with zipfile.ZipFile(file.file, 'r') as zip_ref:
+            zip_ref.extractall('data')
+        df = pd.read_csv(f'{uploaded_data_path}/triplets.csv')
+        crud.append_triplets(db, df)  
 
-@router.delete("/delete_db", status_code=status.HTTP_204_NO_CONTENT)
+        # # Add the new images
+        # temp_images_path = os.path.join('temp', 'images')
+        # for filename in os.listdir(temp_images_path):
+        #     shutil.move(os.path.join(temp_images_path, filename), os.path.join(images_path, filename))
+
+@router.delete("/delete_db", summary="Delete the database.", status_code=status.HTTP_204_NO_CONTENT)
 def delete_db(db: Session = Depends(get_db)):
     crud.delete_all_data(db)  
