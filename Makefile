@@ -4,7 +4,7 @@ run:
 
 ## Post the seed data into the database
 test-seed:
-	python labelizer/tests/seed_data.py
+	python tests/seed_data.py
 
 ## Delete the database (useful for testing)
 delete:
