@@ -7,10 +7,11 @@ class LabelizerTripletResponse(BaseModel):
     id: int
     reference_id: str
     left_id: str
-    right_id: str 
-    
+    right_id: str
+
     class Config:
         orm_mode = True
+
 
 class LabelizedTriplet(BaseModel):
     reference_id: str
