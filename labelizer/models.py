@@ -24,5 +24,6 @@ class LabelizedTriplet(Base):
             "left_id": self.left_id,
             "right_id": self.right_id,
             "label": self.label,
+            "user_id": self.user_id
         }
     

@@ -63,7 +63,7 @@ def make_triplet(
     status_code=status.HTTP_200_OK,
 )
 def set_triplet_label(
-    #TODO add user_id:str,
+    # TODO: add user_id:str,
     triplet_id:str,
     label:SelectedItemType,
     db: Session = Depends(get_db)
