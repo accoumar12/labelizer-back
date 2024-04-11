@@ -1,7 +1,8 @@
 import enum
 
-from database.init_database import Base
 from sqlalchemy import Column, Enum, Integer, String
+
+from labelizer.core.database.init_database import Base
 
 
 class SelectedItemType(enum.Enum):

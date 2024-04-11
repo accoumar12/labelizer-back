@@ -5,19 +5,12 @@ from fastapi import APIRouter, Depends, status
 from starlette.responses import FileResponse
 
 from labelizer.core.database.init_database import SessionLocal
-from labelizer.model import LabelizerTripletResponse, SelectedItemType
+from labelizer.schemas import LabelizerTripletResponse, SelectedItemType
 
 router = APIRouter(tags=["Studies Management"])
 
 # IMAGES_PATH has to be set as an environment variable
 images_path = Path(os.environ['IMAGES_PATH'])
-
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
 
 @router.get(
     "/images/{image_id}",
@@ -32,7 +25,7 @@ async def get_image(image_id:str) -> FileResponse:
     summary="TODO",
     status_code=status.HTTP_200_OK,
 )
-async def make_labelizer_triplet(Session = Depends(get_db)
+async def make_labelizer_triplet(
 ) -> LabelizerTripletResponse:
 
     result = LabelizerTripletResponse("0", "0", "0", "0")

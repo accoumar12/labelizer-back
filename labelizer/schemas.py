@@ -9,7 +9,7 @@ class SelectedItemType(str, Enum):
     DONT_KNOW = 'dont_know'
     #? Add an option if the two left and right items tend to be the most similar, make it more complex for the next iteration
 
-class LabelizerPairsResponse(BaseModel):
+class LabelizerTripletResponse(BaseModel):
     request_id: str
     reference_id: str
     left_id: str
