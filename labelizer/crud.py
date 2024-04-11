@@ -24,3 +24,7 @@ def set_triplet_label(db: Session, triplet_id: int, label: SelectedItemType):
 # We must be careful not to directly output the database objects because we want the values in the end in our csv file
 def get_all_data(db: Session):
     return [triplet.to_dict() for triplet in db.query(models.LabelizedTriplet).all()]
+
+def delete_all_data(db: Session):
+    db.query(models.LabelizedTriplet).delete()
+    db.commit()

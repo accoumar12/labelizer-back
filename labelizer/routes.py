@@ -81,6 +81,6 @@ def download_db(db: Session = Depends(get_db)) -> FileResponse:
 #         df = pd.read_csv('temp/triplet.csv')
 #         crud.append_data(db, df.to_dict())  # You need to implement this function
 
-# @router.delete("/delete_db", status_code=status.HTTP_204_NO_CONTENT)
-# def delete_db(db: Session = Depends(get_db)):
-#     crud.delete_all_data(db)  # You need to implement this function
+@router.delete("/delete_db", status_code=status.HTTP_204_NO_CONTENT)
+def delete_db(db: Session = Depends(get_db)):
+    crud.delete_all_data(db)  
