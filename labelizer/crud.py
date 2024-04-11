@@ -20,3 +20,7 @@ def set_triplet_label(db: Session, triplet_id: int, label: SelectedItemType):
         raise ValueError(f"No triplet found with id {triplet_id}")
     triplet.label = label
     db.commit()
+
+# We must be careful not to directly output the database objects because we want the values in the end in our csv file
+def get_all_data(db: Session):
+    return [triplet.to_dict() for triplet in db.query(models.LabelizedTriplet).all()]

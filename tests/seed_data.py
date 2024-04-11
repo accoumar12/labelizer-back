@@ -23,7 +23,6 @@ def seed_data():
         right_id="3",
     )
 
-    # Use the crud functions to add them to the database
     crud.create_labelized_triplet(db, triplet1)
     crud.create_labelized_triplet(db, triplet2)
     crud.create_labelized_triplet(db, triplet3)

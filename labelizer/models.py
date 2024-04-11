@@ -15,3 +15,14 @@ class LabelizedTriplet(Base):
     label = Column(Enum(SelectedItemType), index=True)
     # Same for the user_id
     user_id = Column(String, index=True)
+
+    # This method is used to convert the object to a dictionary, useful for retrieving the csv when we download the database
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "reference_id": self.reference_id,
+            "left_id": self.left_id,
+            "right_id": self.right_id,
+            "label": self.label,
+        }
+    

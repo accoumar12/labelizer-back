@@ -1,6 +1,7 @@
 import os
 from pathlib import Path
 
+import pandas as pd
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
@@ -15,7 +16,7 @@ router = APIRouter(tags=["Triplet Management"])
 # IMAGES_PATH has to be set as an environment variable
 images_path = Path(os.environ['IMAGES_PATH'])
 
-#TODO Add endpoint that downloads the database in csv format or excell, another one that appends the database with new triplets (zip as parameter, un dossier avec images et fichier triplet.csv), another one that deletes the database. All this for simplicity of use. Must : add a database parameter.
+#TODO Add endpoint that downloads the database in csv format or excell, another one that appends the database with new triplets (zip as parameter, a folder images and a triplet.csv file, another one that deletes the database. All this for simplicity of use. Add a database parameter.
 
 # Dependency
 def get_db():
@@ -64,3 +65,22 @@ def set_triplet_label(
     except ValueError as e:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
     return JSONResponse(content={"message": "Label set successfully"}, status_code=status.HTTP_200_OK)
+
+@router.get("/download_db", summary="Download all the database in the csv format", status_code=status.HTTP_200_OK)
+def download_db(db: Session = Depends(get_db)) -> FileResponse:
+    data = crud.get_all_data(db)  
+    df = pd.DataFrame(data)
+    df.to_csv('database.csv')
+    return FileResponse('database.csv')
+
+# @router.post("/upload_triplets", status_code=status.HTTP_201_CREATED)
+# async def upload_triplets(file: UploadFile = File(...), db: Session = Depends(get_db)):
+#     if file.filename.endswith('.zip'):
+#         with zipfile.ZipFile(file.file, 'r') as zip_ref:
+#             zip_ref.extractall('temp')
+#         df = pd.read_csv('temp/triplet.csv')
+#         crud.append_data(db, df.to_dict())  # You need to implement this function
+
+# @router.delete("/delete_db", status_code=status.HTTP_204_NO_CONTENT)
+# def delete_db(db: Session = Depends(get_db)):
+#     crud.delete_all_data(db)  # You need to implement this function
