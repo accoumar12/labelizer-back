@@ -34,6 +34,7 @@ def get_db():
     finally:
         db.close()
         
+
 @router.get(
     "/images/{image_id}",
     summary="Retrieve an image by its id.",
