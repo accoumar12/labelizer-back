@@ -9,21 +9,18 @@ def seed_data():
         reference_id="1",
         left_id="1",
         right_id="1",
-        user_id="1"
     )
 
     triplet2 = schemas.LabelizedTriplet(
         reference_id="2",
         left_id="2",
         right_id="2",
-        user_id="2"
     )
 
     triplet3 = schemas.LabelizedTriplet(
         reference_id="3",
         left_id="3",
         right_id="3",
-        user_id="3"
     )
 
     # Use the crud functions to add them to the database

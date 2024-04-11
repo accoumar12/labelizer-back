@@ -12,6 +12,14 @@ router = APIRouter(tags=["Studies Management"])
 # IMAGES_PATH has to be set as an environment variable
 images_path = Path(os.environ['IMAGES_PATH'])
 
+# Dependency
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+        
 @router.get(
     "/images/{image_id}",
     summary="TODO",
@@ -41,10 +49,8 @@ async def set_triplet_label(
     user_id:str,
     request_id:str,
     label:SelectedItemType,
+    db: Session = Depends(get_db)
 ) -> None:
-    """
-    TODO
-    """
      
 
     

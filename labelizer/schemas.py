@@ -1,13 +1,7 @@
-from enum import Enum
-
 from pydantic import BaseModel
 
+from labelizer.utils import SelectedItemType
 
-class SelectedItemType(str, Enum):
-    LEFT = 'left'
-    RIGHT = 'right'
-    DONT_KNOW = 'dont_know'
-    #? Add an option if the two left and right items tend to be the most similar, make it more complex for the next iteration
 
 class LabelizerTripletResponse(BaseModel):
     request_id: str
@@ -24,7 +18,8 @@ class LabelizedTriplet(BaseModel):
     right_id: str
     # By default, the label is None, meaning that the user has not selected any option
     label: SelectedItemType = None
-    user_id: str
+    # Same for the user_id
+    user_id: str = None
 
     class Config:
         orm_mode = True

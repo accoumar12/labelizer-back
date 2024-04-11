@@ -5,6 +5,10 @@ run:
 ## Post the seed data into the database
 seed:
 	python labelizer/seed_data.py
+
+## Delete the database (useful for testing)
+delete:
+	rm -rf labelizer/core/database/labelizer.db
 #################################################################################
 # Self Documenting Commands                                                     #
 #################################################################################

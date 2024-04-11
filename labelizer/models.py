@@ -1,15 +1,8 @@
-import enum
-
 from sqlalchemy import Column, Enum, Integer, String
 
 from labelizer.core.database.init_database import Base
+from labelizer.utils import SelectedItemType
 
-
-class SelectedItemType(enum.Enum):
-    LEFT = 'left'
-    RIGHT = 'right'
-    DONT_KNOW = 'dont_know'
-    #? Add an option if the two left and right items tend to be the most similar, make it more complex for the next iteration
 
 class LabelizedTriplet(Base):
     __tablename__ = 'labelized_triplets'
