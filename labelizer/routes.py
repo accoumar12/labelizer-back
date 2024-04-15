@@ -47,11 +47,12 @@ async def get_image(image_id: str) -> FileResponse:
 
 @router.get(
     "/triplet",
-    summary="Get the triplet (it is actually the first unlabeled triplet).",
+    summary="Get the triplet for the user of the app (it is actually the first unlabeled triplet of the database).",
     status_code=status.HTTP_200_OK,
 )
 def make_triplet(
     db: Session = Depends(get_db),
+    user: UserSession
 ) -> schemas.LabelizerTripletResponse:
     triplet = crud.get_first_unlabeled_triplet(db)
     if triplet is None:
@@ -101,7 +102,7 @@ def download_db(db: Session = Depends(get_db)) -> FileResponse:
 
 @router.post(
     "/upload_data",
-    summary="Upload new data, including images and triplets.",
+    summary="Upload new data, including images and triplets. The data has to be a zipped folder containing a csv file named triplets.csv and a folder named images containing the images.",
     status_code=status.HTTP_201_CREATED,
 )
 def upload_data(file: UploadFile = File(...), db: Session = Depends(get_db)) -> None:
@@ -124,7 +125,9 @@ def upload_data(file: UploadFile = File(...), db: Session = Depends(get_db)) -> 
 
 
 @router.delete(
-    "/delete_db", summary="Delete the database.", status_code=status.HTTP_204_NO_CONTENT
+    "/delete_db",
+    summary="Delete all the data inside the database.",
+    status_code=status.HTTP_204_NO_CONTENT,
 )
-def delete_db(db: Session = Depends(get_db)) -> None:
+def delete_db(db: Session = Depends(get_db), user: AdminUserSession) -> None:
     crud.delete_all_data(db)
