@@ -6,6 +6,7 @@ from pathlib import Path
 import pandas as pd
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
 from fastapi.responses import JSONResponse
+from labelizer.core.api.auth.core import AdminUserSession, UserSession
 from sqlalchemy.orm import Session
 from starlette.responses import FileResponse
 
@@ -27,7 +28,7 @@ uploaded_data_path = os.path.join(root_path, "data", "data")
 # TODO: Add a parameter for the database used
 
 
-# Dependency
+# Dependency on the database
 def get_db():
     db = SessionLocal()
     try:
@@ -51,13 +52,13 @@ async def get_image(image_id: str) -> FileResponse:
     status_code=status.HTTP_200_OK,
 )
 def make_triplet(
-    db: Session = Depends(get_db),
-    user: UserSession
+    user: UserSession,
+    db: Session = Depends(get_db)
 ) -> schemas.LabelizerTripletResponse:
     triplet = crud.get_first_unlabeled_triplet(db)
     if triplet is None:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="No unlabeled triplet found"
+            status_code=status.HTTP_404_NOT_FOUND, detail="No unlabeled triplet found."
         )
     triplet = schemas.LabelizerTripletResponse(
         id=triplet.id,
@@ -84,7 +85,7 @@ def set_triplet_label(
     except ValueError as e:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
     return JSONResponse(
-        content={"message": "Label set successfully"}, status_code=status.HTTP_200_OK
+        content={"message": "Label set successfully."}, status_code=status.HTTP_200_OK
     )
 
 
