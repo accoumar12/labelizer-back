@@ -8,6 +8,7 @@ DEFAULT_GROUPS = ""
 
 class UserGroup(StrEnum):
     ADMIN = "admin"
+    STANDARD = "standard"
 
 
 class User(BaseModel):

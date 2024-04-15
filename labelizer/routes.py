@@ -89,10 +89,10 @@ def set_triplet_label(
 
 @router.get(
     "/download_db",
-    summary="Download all the database in the csv format.",
+    summary="Download all the database in the csv format. Needs to be authorized as an admin user.",
     status_code=status.HTTP_200_OK,
 )
-def download_db(db: Session = Depends(get_db)) -> FileResponse:
+def download_db(user: AdminUserSession, db: Session = Depends(get_db)) -> FileResponse:
     data = crud.get_all_data(db)
     df = pd.DataFrame(data)
     df.to_csv("database.csv")
@@ -101,10 +101,12 @@ def download_db(db: Session = Depends(get_db)) -> FileResponse:
 
 @router.post(
     "/upload_data",
-    summary="Upload new data, including images and triplets. The data has to be a zipped folder containing a csv file named triplets.csv and a folder named images containing the images.",
+    summary="Upload new data, including images and triplets. The data has to be a zipped folder containing a csv file named triplets.csv and a folder named images containing the images. Needs to be authorized as an admin user.",
     status_code=status.HTTP_201_CREATED,
 )
-def upload_data(file: UploadFile = File(...), db: Session = Depends(get_db)) -> None:
+def upload_data(
+    user: AdminUserSession, file: UploadFile = File(...), db: Session = Depends(get_db)
+) -> JSONResponse:
     if file.filename.endswith(".zip"):
         # Extract the csv file
         with zipfile.ZipFile(file.file, "r") as zip_ref:
@@ -121,6 +123,10 @@ def upload_data(file: UploadFile = File(...), db: Session = Depends(get_db)) -> 
                 os.path.join(uploaded_images_path, filename),
                 os.path.join(images_path, filename),
             )
+        return JSONResponse(
+            content={"message": "Data uploaded successfully."},
+            status_code=status.HTTP_201_CREATED,
+        )
 
 
 @router.delete(
@@ -128,5 +134,9 @@ def upload_data(file: UploadFile = File(...), db: Session = Depends(get_db)) -> 
     summary="Delete all the data inside the database.",
     status_code=status.HTTP_204_NO_CONTENT,
 )
-def delete_db(user: AdminUserSession, db: Session = Depends(get_db)) -> None:
+def delete_db(user: AdminUserSession, db: Session = Depends(get_db)) -> JSONResponse:
     crud.delete_all_data(db)
+    return JSONResponse(
+        content={"message": "Database deleted successfully."},
+        status_code=status.HTTP_204_NO_CONTENT,
+    )
