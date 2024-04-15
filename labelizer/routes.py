@@ -104,7 +104,7 @@ def download_db(user: AdminUserSession, db: Session = Depends(get_db)) -> FileRe
     summary="Upload new data, including images and triplets. The data has to be a zipped folder containing a csv file named triplets.csv and a folder named images containing the images. Needs to be authorized as an admin user.",
     status_code=status.HTTP_201_CREATED,
 )
-def upload_data(
+async def upload_data(
     user: AdminUserSession, file: UploadFile = File(...), db: Session = Depends(get_db)
 ) -> JSONResponse:
     if file.filename.endswith(".zip"):
@@ -114,15 +114,36 @@ def upload_data(
 
         # Add the triplets to the database
         df = pd.read_csv(f"{uploaded_data_path}/triplets.csv")
+
+        # Check if each value in the triplets corresponds to an image that is loaded
+        uploaded_images_path = os.path.join(uploaded_data_path, "images")
+        uploaded_images = set(os.listdir(uploaded_images_path))
+        triplet_values = set(df.values.flatten())
+
+        missing_images = triplet_values - uploaded_images
+        if missing_images:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Missing images for these triplet values: {missing_images}",
+            )
+
+        # Check if there are extra images that do not have any value in the triplets
+        extra_images = uploaded_images - triplet_values
+        if extra_images:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Extra images that do not have any value in the triplets: {extra_images}",
+            )
+
+        # If checks pass, add triplets to the database and move images
         crud.create_labelized_triplets(db, df)
 
-        # Add the new images
-        uploaded_images_path = os.path.join(uploaded_data_path, "images")
-        for filename in os.listdir(uploaded_images_path):
+        for filename in uploaded_images:
             shutil.move(
                 os.path.join(uploaded_images_path, filename),
                 os.path.join(images_path, filename),
             )
+
         return JSONResponse(
             content={"message": "Data uploaded successfully."},
             status_code=status.HTTP_201_CREATED,
