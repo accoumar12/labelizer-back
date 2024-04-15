@@ -132,11 +132,11 @@ def upload_data(
 @router.delete(
     "/delete_db",
     summary="Delete all the data inside the database.",
-    status_code=status.HTTP_204_NO_CONTENT,
+    status_code=status.HTTP_200_OK,
 )
 def delete_db(user: AdminUserSession, db: Session = Depends(get_db)) -> JSONResponse:
     crud.delete_all_data(db)
     return JSONResponse(
         content={"message": "Database deleted successfully."},
-        status_code=status.HTTP_204_NO_CONTENT,
+        status_code=status.HTTP_200_OK,
     )
