@@ -150,7 +150,7 @@ async def upload_data(
             shutil.rmtree(uploaded_data_path)
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Missing images for these triplet values: {missing_images}",
+                detail=f"Missing images for these triplet values: {missing_images}.",
             )
 
         # Check if there are extra images that do not have any value in the triplets
@@ -159,7 +159,7 @@ async def upload_data(
             shutil.rmtree(uploaded_data_path)
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Extra images that do not have any value in the triplets: {extra_images}",
+                detail=f"Extra images that do not have any value in the triplets: {extra_images}.",
             )
 
         # If checks pass, add triplets to the database and move images

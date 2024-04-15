@@ -23,7 +23,7 @@ async def get_current_user(request: Request) -> User:
         logger.exception(e)
         raise HTTPException(
             status_code=HTTP_401_UNAUTHORIZED,
-            detail="Not authenticated",
+            detail="Not authenticated.",
         )
 
 
