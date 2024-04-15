@@ -26,7 +26,9 @@ def get_first_unlabeled_triplet(db: Session):
     )
 
 
-def set_triplet_label(db: Session, triplet_id: int, label: SelectedItemType):
+def set_triplet_label(
+    db: Session, triplet_id: int, label: SelectedItemType, user_id: str
+):
     triplet = (
         db.query(models.LabelizedTriplet)
         .filter(models.LabelizedTriplet.id == triplet_id)
@@ -35,6 +37,7 @@ def set_triplet_label(db: Session, triplet_id: int, label: SelectedItemType):
     if triplet is None:
         raise ValueError(f"No triplet found with id {triplet_id}")
     triplet.label = label
+    triplet.user_id = user_id
     db.commit()
 
 

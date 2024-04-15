@@ -13,8 +13,11 @@ logger = getLogger(__file__)
 async def get_current_user(request: Request) -> User:
     """Read user provided in OAuth2 Proxy headers"""
     try:
-        uid = request.headers["x-forwarded-email"]
-        groups = request.headers.get("x-forwarded-groups", "")
+        # uid = request.headers["x-forwarded-email"]
+        # groups = request.headers.get("x-forwarded-groups", "")
+        #!!! hardcoded values for testing
+        uid = "test-user"
+        groups = [UserGroup.ADMIN]
         return User(uid=uid, groups=groups)
     except Exception as e:
         logger.exception(e)

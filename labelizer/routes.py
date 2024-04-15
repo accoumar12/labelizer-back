@@ -6,17 +6,18 @@ from pathlib import Path
 import pandas as pd
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
 from fastapi.responses import JSONResponse
-from labelizer.core.api.auth.core import AdminUserSession, UserSession
 from sqlalchemy.orm import Session
 from starlette.responses import FileResponse
 
 from labelizer import crud, schemas
+from labelizer.core.api.auth.core import AdminUserSession, UserSession
 from labelizer.core.database.init_database import SessionLocal
 from labelizer.utils import SelectedItemType
 
 router = APIRouter(tags=["Triplet Management"])
 
-# ROOT_PATH has to be set as an environment variable, this is the path to the root of the project
+
+#!!! ROOT_PATH has to be set as an environment variable, this is the path to the root of the project
 root_path = Path(os.environ["ROOT_PATH"])
 
 # Path to the images folder
@@ -51,10 +52,7 @@ async def get_image(image_id: str) -> FileResponse:
     summary="Get the triplet for the user of the app (it is actually the first unlabeled triplet of the database).",
     status_code=status.HTTP_200_OK,
 )
-def make_triplet(
-    user: UserSession,
-    db: Session = Depends(get_db)
-) -> schemas.LabelizerTripletResponse:
+def make_triplet(db: Session = Depends(get_db)) -> schemas.LabelizerTripletResponse:
     triplet = crud.get_first_unlabeled_triplet(db)
     if triplet is None:
         raise HTTPException(
@@ -75,13 +73,13 @@ def make_triplet(
     status_code=status.HTTP_200_OK,
 )
 def set_triplet_label(
-    # TODO: add user_id:str,
+    user: UserSession,
     triplet_id: str,
     label: SelectedItemType,
     db: Session = Depends(get_db),
 ) -> JSONResponse:
     try:
-        crud.set_triplet_label(db, triplet_id, label)
+        crud.set_triplet_label(db, triplet_id, label, user.uid)
     except ValueError as e:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
     return JSONResponse(
@@ -130,5 +128,5 @@ def upload_data(file: UploadFile = File(...), db: Session = Depends(get_db)) -> 
     summary="Delete all the data inside the database.",
     status_code=status.HTTP_204_NO_CONTENT,
 )
-def delete_db(db: Session = Depends(get_db), user: AdminUserSession) -> None:
+def delete_db(user: AdminUserSession, db: Session = Depends(get_db)) -> None:
     crud.delete_all_data(db)
