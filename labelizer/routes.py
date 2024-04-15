@@ -20,7 +20,7 @@ router = APIRouter(tags=["Triplet Management"])
 #!!! ROOT_PATH has to be set as an environment variable, this is the path to the root of the project
 root_path = Path(os.environ["ROOT_PATH"])
 
-# Path to the images folder
+# Path to the images folder, where the images used by the backend are stored
 images_path = os.path.join(root_path, "images")
 
 # Path to the data folder, where the uploaded data is stored before being processed
@@ -112,6 +112,31 @@ async def upload_data(
         with zipfile.ZipFile(file.file, "r") as zip_ref:
             zip_ref.extractall("data")
 
+        if not os.path.exists("data/data"):
+            shutil.rmtree(uploaded_data_path)
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="The root folder in the zip file should be named 'data'.",
+            )
+
+        if not os.path.exists("data/data/images"):
+            shutil.rmtree(uploaded_data_path)
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="The images folder should be named 'images'.",
+            )
+
+        if not os.path.exists("data/data/triplets.csv"):
+            shutil.rmtree(uploaded_data_path)
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="The csv file should be named 'triplets.csv'.",
+            )
+
+        # Remove the desktop.ini file that is sometimes added by Windows
+        if os.path.exists(f"{uploaded_data_path}/images/desktop.ini"):
+            os.remove(f"{uploaded_data_path}/images/desktop.ini")
+
         # Add the triplets to the database
         df = pd.read_csv(f"{uploaded_data_path}/triplets.csv")
 
@@ -122,6 +147,7 @@ async def upload_data(
 
         missing_images = triplet_values - uploaded_images
         if missing_images:
+            shutil.rmtree(uploaded_data_path)
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail=f"Missing images for these triplet values: {missing_images}",
@@ -130,6 +156,7 @@ async def upload_data(
         # Check if there are extra images that do not have any value in the triplets
         extra_images = uploaded_images - triplet_values
         if extra_images:
+            shutil.rmtree(uploaded_data_path)
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail=f"Extra images that do not have any value in the triplets: {extra_images}",
@@ -143,6 +170,8 @@ async def upload_data(
                 os.path.join(uploaded_images_path, filename),
                 os.path.join(images_path, filename),
             )
+
+        shutil.rmtree(uploaded_data_path)
 
         return JSONResponse(
             content={"message": "Data uploaded successfully."},
