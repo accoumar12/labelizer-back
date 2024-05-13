@@ -1,0 +1,18 @@
+select = ["ALL"]
+ignore = [
+    #### specific rules
+    "D100", # Missing public modules docstring
+    "D101", # Missing public class docstring
+    "D102", # Missing public method docstring
+    "D103", # Missing public function docstring
+    "D105", # Missing magic method docstring
+    "D107", # Missing init docstring
+    "E501", # Line is too long
+    "PLR0913", # Too much arguments
+    "S101", # Assert detected
+    "TD002", # TODO author needed
+    "TD003", # Missing TODO link to issues
+    "ANN101", # Chef that self has type annotation
+    "NPY002", # Replace numpy.random.seed
+    "PERF401", # Replace with list comprehension
+]
