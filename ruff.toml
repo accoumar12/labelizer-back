@@ -15,4 +15,6 @@ ignore = [
     "ANN101", # Chef that self has type annotation
     "NPY002", # Replace numpy.random.seed
     "PERF401", # Replace with list comprehension
+    "EXE003", # Shebang should contain python
+    "EXE005", # Shebang should be at the beginning of the file
 ]

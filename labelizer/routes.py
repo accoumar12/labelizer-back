@@ -17,20 +17,18 @@ from labelizer.utils import SelectedItemType
 router = APIRouter(tags=["Triplet Management"])
 
 
-#!!! ROOT_PATH has to be set as an environment variable, this is the path to the root of the project
+#! ROOT_PATH has to be set as an environment variable, this is the path to the root of the project
 root_path = Path(os.environ["ROOT_PATH"])
 
 # Path to the images folder, where the images used by the backend are stored
-images_path = os.path.join(root_path, "images")
+images_path = root_path / "images"
 
 # Path to the data folder, where the uploaded data is stored before being processed
-uploaded_data_path = os.path.join(root_path, "data", "data")
-
-# TODO: Add a parameter for the database used
+uploaded_data_path = root_path / "data" / "data"
 
 
 # Dependency on the database
-def get_db():
+def get_db() -> SessionLocal:
     db = SessionLocal()
     try:
         yield db
@@ -58,13 +56,12 @@ def make_triplet(db: Session = Depends(get_db)) -> schemas.LabelizerTripletRespo
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="No unlabeled triplet found."
         )
-    triplet = schemas.LabelizerTripletResponse(
+    return schemas.LabelizerTripletResponse(
         id=triplet.id,
         reference_id=triplet.reference_id,
         left_id=triplet.left_id,
         right_id=triplet.right_id,
     )
-    return triplet
 
 
 @router.post(
@@ -81,9 +78,10 @@ def set_triplet_label(
     try:
         crud.set_triplet_label(db, triplet_id, label, user.uid)
     except ValueError as e:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND) from e
     return JSONResponse(
-        content={"message": "Label set successfully."}, status_code=status.HTTP_200_OK
+        content={"message": "Label set successfully."},
+        status_code=status.HTTP_200_OK,
     )
 
 
@@ -94,8 +92,8 @@ def set_triplet_label(
 )
 def download_db(user: AdminUserSession, db: Session = Depends(get_db)) -> FileResponse:
     data = crud.get_all_data(db)
-    df = pd.DataFrame(data)
-    df.to_csv("database.csv")
+    data = pd.DataFrame(data)
+    data.to_csv("database.csv")
     return FileResponse("database.csv")
 
 
