@@ -110,21 +110,21 @@ async def upload_data(
         with zipfile.ZipFile(file.file, "r") as zip_ref:
             zip_ref.extractall("data")
 
-        if not os.path.exists("data/data"):
+        if not Path("data/data").exists():
             shutil.rmtree(uploaded_data_path)
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="The root folder in the zip file should be named 'data'.",
             )
 
-        if not os.path.exists("data/data/images"):
+        if not Path("data/data/images").exists():
             shutil.rmtree(uploaded_data_path)
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="The images folder should be named 'images'.",
             )
 
-        if not os.path.exists("data/data/triplets.csv"):
+        if not Path("data/data/triplets.csv").exists():
             shutil.rmtree(uploaded_data_path)
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
@@ -132,16 +132,16 @@ async def upload_data(
             )
 
         # Remove the desktop.ini file that is sometimes added by Windows
-        if os.path.exists(f"{uploaded_data_path}/images/desktop.ini"):
-            os.remove(f"{uploaded_data_path}/images/desktop.ini")
+        if Path(f"{uploaded_data_path}/images/desktop.ini").exists():
+            Path(f"{uploaded_data_path}/images/desktop.ini").unlink()
 
         # Add the triplets to the database
-        df = pd.read_csv(f"{uploaded_data_path}/triplets.csv")
+        triplets = pd.read_csv(f"{uploaded_data_path}/triplets.csv")
 
         # Check if each value in the triplets corresponds to an image that is loaded
-        uploaded_images_path = os.path.join(uploaded_data_path, "images")
+        uploaded_images_path = uploaded_data_path / "images"
         uploaded_images = set(os.listdir(uploaded_images_path))
-        triplet_values = set(df.values.flatten())
+        triplet_values = set(triplets.to_numpy().flatten())
 
         missing_images = triplet_values - uploaded_images
         if missing_images:
@@ -161,12 +161,12 @@ async def upload_data(
             )
 
         # If checks pass, add triplets to the database and move images
-        crud.create_labelized_triplets(db, df)
+        crud.create_labelized_triplets(db, triplets)
 
         for filename in uploaded_images:
             shutil.move(
-                os.path.join(uploaded_images_path, filename),
-                os.path.join(images_path, filename),
+                uploaded_images_path / filename,
+                images_path / filename,
             )
 
         shutil.rmtree(uploaded_data_path)
@@ -175,6 +175,7 @@ async def upload_data(
             content={"message": "Data uploaded successfully."},
             status_code=status.HTTP_201_CREATED,
         )
+    return None
 
 
 @router.delete(
