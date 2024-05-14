@@ -143,12 +143,14 @@ async def upload_data(
         # Add the triplets to the database
         triplets = pd.read_csv(f"{uploaded_data_path}/triplets.csv")
 
-        # Check if each value in the triplets corresponds to an image that is loaded
+        # Check if each value in the triplets corresponds to an image that is available (loaded + already there)
         uploaded_images_path = uploaded_data_path / "images"
         uploaded_images = set(os.listdir(uploaded_images_path))
+        all_images = set(os.listdir(images_path)) | uploaded_images
         triplet_values = set(triplets.to_numpy().flatten())
 
-        missing_images = triplet_values - uploaded_images
+        missing_images = triplet_values - all_images
+
         if missing_images:
             uploaded_data_path.unlink()
             raise HTTPException(
