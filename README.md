@@ -1,0 +1,1 @@
+Architecture choices inspired by the FastAPI tutorial: https://fastapi.tiangolo.com/tutorial/sql-databases/

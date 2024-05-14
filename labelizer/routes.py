@@ -16,7 +16,6 @@ from labelizer.utils import SelectedItemType
 
 router = APIRouter(tags=["Triplet Management"])
 
-
 #! ROOT_PATH has to be set as an environment variable, this is the path to the root of the project
 root_path = Path(os.environ["ROOT_PATH"])
 
@@ -47,20 +46,24 @@ async def get_image(image_id: str) -> FileResponse:
 
 @router.get(
     "/triplet",
-    summary="Get the triplet for the user of the app (it is actually the first unlabeled triplet of the database).",
+    summary="Get the triplet for the user of the app.",
     status_code=status.HTTP_200_OK,
 )
 def make_triplet(db: Session = Depends(get_db)) -> schemas.LabelizerTripletResponse:
     triplet = crud.get_first_unlabeled_triplet(db)
     if triplet is None:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="No unlabeled triplet found."
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="No unlabeled triplet found.",
         )
     return schemas.LabelizerTripletResponse(
         id=triplet.id,
         reference_id=triplet.reference_id,
+        reference_length=triplet.reference_length,
         left_id=triplet.left_id,
+        left_length=triplet.reference_length,
         right_id=triplet.right_id,
+        right_length=triplet.right_length,
     )
 
 
@@ -103,7 +106,9 @@ def download_db(user: AdminUserSession, db: Session = Depends(get_db)) -> FileRe
     status_code=status.HTTP_201_CREATED,
 )
 async def upload_data(
-    user: AdminUserSession, file: UploadFile = File(...), db: Session = Depends(get_db)
+    user: AdminUserSession,
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db),
 ) -> JSONResponse:
     if file.filename.endswith(".zip"):
         # Extract the csv file
@@ -145,7 +150,7 @@ async def upload_data(
 
         missing_images = triplet_values - uploaded_images
         if missing_images:
-            shutil.rmtree(uploaded_data_path)
+            uploaded_data_path.unlink()
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail=f"Missing images for these triplet values: {missing_images}.",
@@ -154,7 +159,7 @@ async def upload_data(
         # Check if there are extra images that do not have any value in the triplets
         extra_images = uploaded_images - triplet_values
         if extra_images:
-            shutil.rmtree(uploaded_data_path)
+            uploaded_data_path.unlink()
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail=f"Extra images that do not have any value in the triplets: {extra_images}.",
@@ -169,7 +174,7 @@ async def upload_data(
                 images_path / filename,
             )
 
-        shutil.rmtree(uploaded_data_path)
+        uploaded_data_path.unlink()
 
         return JSONResponse(
             content={"message": "Data uploaded successfully."},

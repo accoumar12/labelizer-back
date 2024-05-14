@@ -6,6 +6,7 @@ ignore = [
     "D102", # Missing public method docstring
     "D103", # Missing public function docstring
     "D105", # Missing magic method docstring
+    "D106", # Missing public nested cladd docstring
     "D107", # Missing init docstring
     "E501", # Line is too long
     "PLR0913", # Too much arguments
@@ -17,4 +18,6 @@ ignore = [
     "PERF401", # Replace with list comprehension
     "EXE003", # Shebang should contain python
     "EXE005", # Shebang should be at the beginning of the file
+    "ARG001", # Unused arguments
+    "B008", # Check for function calls in default function arguments
 ]

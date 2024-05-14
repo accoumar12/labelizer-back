@@ -2,12 +2,17 @@ from pydantic import BaseModel
 
 from labelizer.utils import SelectedItemType
 
+# This file contains the Pydantic models, while the models file contains the SQLAlchemy models
+
 
 class LabelizerTripletResponse(BaseModel):
     id: int
     reference_id: str
+    reference_length: float
     left_id: str
+    left_length: float
     right_id: str
+    right_length: float
 
     class Config:
         orm_mode = True
