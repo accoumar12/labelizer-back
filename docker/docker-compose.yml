@@ -11,6 +11,10 @@ services:
       - 42042:42042
     environment:
       ROOT_PATH: /app/data
+      DEV_MOD: 1
     volumes:
-      - ./workspace:/app/data
+      - workspace-data:/app/data
 
+
+volumes:
+  workspace-data:
