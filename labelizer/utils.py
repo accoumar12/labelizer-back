@@ -3,6 +3,7 @@ from __future__ import annotations
 import io
 import shutil
 import tempfile
+from turtle import up
 import zipfile
 from pathlib import Path
 
@@ -25,8 +26,8 @@ def get_db_excel_export(db: Session) -> io.BytesIO:
     return stream
 
 
-def extract_zip(file: UploadFile) -> str:
-    tmp_path = tempfile.mkdtemp()
+def extract_zip(file: UploadFile) -> Path:
+    tmp_path = Path(tempfile.mkdtemp())
     with zipfile.ZipFile(file.file, "r") as zip_ref:
         zip_ref.extractall(tmp_path)
     return tmp_path
@@ -64,9 +65,10 @@ def get_all_images_ids(uploaded_images_ids: set[str]) -> set[str]:
 def update_database(
     db: Session,
     triplets: pd.DataFrame,
-    uploaded_images: set[Path],
+    uploaded_images_path: Path,
 ) -> None:
     crud.create_labelized_triplets(db, triplets)
+    uploaded_images = uploaded_images_path.iterdir()
     for file in uploaded_images:
         shutil.move(
             file,

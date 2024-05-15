@@ -161,7 +161,7 @@ def upload_data(file: UploadFile, db: Session = Depends(get_db)) -> None:
         )
 
     # If checks pass, add triplets to the database and move images
-    update_database(db, triplets, uploaded_images_ids)
+    update_database(db, triplets, uploaded_images_path)
     shutil.rmtree(tmp_path)
 
 
