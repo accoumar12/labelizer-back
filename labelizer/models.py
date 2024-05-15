@@ -18,7 +18,7 @@ class LabelizedTriplet(Base):
     right_length = Column(Float, index=True)
     # We include the id of the model used to generate the triplets
     model_id = Column(String, index=True)
-    # By default, the label is None, meaning that the user has not selected any option
+    # By default, the label is None, meaning that the user has not selected any option. This is expressed in the pydantic schemas
     label = Column(Enum(SelectedItemType), index=True)
     # Same for the user_id
     user_id = Column(String, index=True)
