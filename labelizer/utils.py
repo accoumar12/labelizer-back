@@ -3,7 +3,6 @@ from __future__ import annotations
 import io
 import shutil
 import tempfile
-from turtle import up
 import zipfile
 from pathlib import Path
 
