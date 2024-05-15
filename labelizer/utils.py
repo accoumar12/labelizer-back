@@ -11,9 +11,9 @@ from fastapi import HTTPException, UploadFile, status
 from sqlalchemy.orm import Session
 
 from labelizer import crud
-from labelizer.app_config import AppConfig
+from labelizer.app_config import get_app_config
 
-app_config = AppConfig()
+app_config = get_app_config()
 
 
 def get_db_excel_export(db: Session) -> io.BytesIO:
