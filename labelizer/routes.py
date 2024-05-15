@@ -28,7 +28,7 @@ app_config = get_app_config()
 
 @router.get(
     "/images/{image_id}",
-    summary="Retrieve an image by its id.",
+    summary="Retrieve an image by its id. Needs the full path including the extension.",
     status_code=status.HTTP_200_OK,
 )
 async def get_image(image_id: str) -> FileResponse:
