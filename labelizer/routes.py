@@ -32,7 +32,7 @@ app_config = get_app_config()
     status_code=status.HTTP_200_OK,
 )
 async def get_image(image_id: str) -> FileResponse:
-    return FileResponse(f"{app_config.images_path}/{image_id}")
+    return FileResponse(f"{app_config.images_path}/{image_id}.stp.png")
 
 
 @router.get(
