@@ -20,8 +20,12 @@ class LabelizerTripletResponse(BaseModel):
 
 class LabelizedTriplet(BaseModel):
     reference_id: str
+    reference_length: float
     left_id: str
+    left_length: float
     right_id: str
+    right_length: float
+    model_id: str
     # By default, the label is None, meaning that the user has not selected any option
     label: SelectedItemType = None
     # Same for the user_id

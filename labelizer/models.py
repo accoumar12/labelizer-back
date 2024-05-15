@@ -16,12 +16,12 @@ class LabelizedTriplet(Base):
     left_length = Column(Float, index=True)
     right_id = Column(String, index=True)
     right_length = Column(Float, index=True)
+    # We include the id of the model used to generate the triplets
+    model_id = Column(String, index=True)
     # By default, the label is None, meaning that the user has not selected any option
     label = Column(Enum(SelectedItemType), index=True)
     # Same for the user_id
     user_id = Column(String, index=True)
-    # We include the id of the model used to generate the triplets
-    model_id = Column(String, index=True)
 
     # This method is used to convert the object to a dictionary, useful for retrieving the csv when we download the database
     def to_dict(self) -> dict:
@@ -33,7 +33,7 @@ class LabelizedTriplet(Base):
             "left_length": self.left_length,
             "right_id": self.right_id,
             "right_length": self.right_length,
+            "model_id": self.model_id,
             "label": self.label,
             "user_id": self.user_id,
-            "model_id": self.model_id,
         }
