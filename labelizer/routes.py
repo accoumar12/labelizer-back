@@ -10,8 +10,8 @@ from labelizer import crud, schemas
 from labelizer.app_config import AppConfig
 from labelizer.core.api.auth.core import AdminUserSession, UserSession
 from labelizer.core.database.get_database import get_db
+from labelizer.types import SelectedItemType
 from labelizer.utils import (
-    SelectedItemType,
     check_structure_consistency,
     extract_zip,
     get_all_images_ids,

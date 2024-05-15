@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from pydantic import BaseModel
 
-from labelizer.utils import SelectedItemType  # noqa: TCH001
+from labelizer.types import SelectedItemType  # noqa: TCH001
 
 # This file contains the Pydantic models, while the models file contains the SQLAlchemy models
 

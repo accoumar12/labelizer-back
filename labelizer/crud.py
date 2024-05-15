@@ -8,7 +8,7 @@ if TYPE_CHECKING:
     import pandas as pd
     from sqlalchemy.orm import Session
 
-    from labelizer.utils import SelectedItemType
+    from labelizer.crud import SelectedItemType
 
 
 def create_labelized_triplet(
