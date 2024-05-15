@@ -7,7 +7,7 @@ test-seed:
 	python tests/seed_data.py
 
 ## Delete the database (useful for testing)
-delete:
+delete_db:
 	rm -rf labelizer/core/database/labelizer.db
 #################################################################################
 # Self Documenting Commands                                                     #
