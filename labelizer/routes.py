@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 from starlette.responses import FileResponse
 
 from labelizer import crud, schemas
-from labelizer.app_config import AppConfig
+from labelizer.app_config import get_app_config
 from labelizer.core.api.auth.core import AdminUserSession, UserSession
 from labelizer.core.database.get_database import get_db
 from labelizer.types import SelectedItemType
@@ -23,7 +23,7 @@ from labelizer.utils import (
 
 router = APIRouter(tags=["Triplet Management"])
 
-app_config = AppConfig()
+app_config = get_app_config()
 
 
 @router.get(
