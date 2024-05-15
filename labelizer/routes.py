@@ -120,16 +120,23 @@ async def upload_data_endpoint(
     file: UploadFile = File(...),
     db: Session = Depends(get_db),
 ) -> JSONResponse:
-    upload_data()
+    upload_data(file, db)
+
+    return JSONResponse(
+        content={"message": "Data uploaded successfully."},
+        status_code=status.HTTP_201_CREATED,
+    )
 
 
-def upload_data(file: UploadFile):
+def upload_data(file: UploadFile, db) -> None:
     filename = file.filename
     if not filename.endswith(".zip"):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="The file should be a zip file.",
         )
+
+    extract_zip()
 
     tmp_dir = tempfile.mkdtemp()
     with zipfile.ZipFile(file.file, "r") as zip_ref:
@@ -138,6 +145,7 @@ def upload_data(file: UploadFile):
     uploaded_data_path = tmp_dir / "data"
 
     # Extract the csv file
+    check_zip_format()
 
     if not Path(uploaded_data_path).exists():
         shutil.rmtree(tmp_dir)
@@ -147,34 +155,37 @@ def upload_data(file: UploadFile):
         )
 
     # Add the triplets to the database
-    if not Path(uploaded_data_path / "triplets.csv").exists():
+    triplets_path = uploaded_data_path / "triplets.csv"
+    if not triplets_path.exists():
         shutil.rmtree(uploaded_data_path)
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="The csv file should be named 'triplets.csv'.",
         )
 
-    triplets = pd.read_csv(f"{uploaded_data_path}/triplets.csv")
+    triplets = pd.read_csv(triplets_path)
     triplets_cads_ids = (
         triplets[["reference_id", "left_id", "right_id"]].to_numpy().flatten()
     )
 
     # Check if each value in the triplets corresponds to an image that is available (loaded + already there)
     uploaded_images_path = uploaded_data_path / "images"
-    if not Path(uploaded_data_path / "images").exists():
+    if not Path(uploaded_images_path).exists():
         shutil.rmtree(tmp_dir)
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="The images folder should exist and be named 'images'.",
         )
+
+    check_images_availability()
     uploaded_images = set(uploaded_images_path.iterdir())
     uploaded_images_ids = {file.name.split(".")[0] for file in uploaded_images}
     all_images_ids = {
-        file.name.split(".")[0] for file in images_path.iterdir()
+        file.name.split(".")[0] for file in app_config.images_path.iterdir()
     } | uploaded_images_ids
     triplet_values = set(triplets_cads_ids)
 
-    missing_images_names = triplet_values - all_i
+    missing_images_names = triplet_values - all_images_ids
 
     if missing_images_names:
         shutil.rmtree(uploaded_data_path)
@@ -184,21 +195,18 @@ def upload_data(file: UploadFile):
         )
 
     # If checks pass, add triplets to the database and move images
+
+    update_database()
+
     crud.create_labelized_triplets(db, triplets)
 
     for file in uploaded_images:
         shutil.move(
             file,
-            images_path / file.name,
+            app_config.images_path / file.name,
         )
 
     shutil.rmtree(tmp_dir)
-
-    return JSONResponse(
-        content={"message": "Data uploaded successfully."},
-        status_code=status.HTTP_201_CREATED,
-    )
-    return None
 
 
 @router.delete(
