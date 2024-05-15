@@ -115,21 +115,22 @@ async def upload_data(
         with zipfile.ZipFile(file.file, "r") as zip_ref:
             zip_ref.extractall("data")
 
-        if not Path("data/data").exists():
+        if not Path(uploaded_data_path).exists():
             shutil.rmtree(uploaded_data_path)
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="The root folder in the zip file should be named 'data'.",
             )
 
-        if not Path("data/data/images").exists():
+        uploaded_images_path = uploaded_data_path / "images"
+        if not Path(uploaded_images_path).exists():
             shutil.rmtree(uploaded_data_path)
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="The images folder should be named 'images'.",
+                detail="The images folder should exist and be named 'images'.",
             )
 
-        if not Path("data/data/triplets.csv").exists():
+        if not Path(uploaded_data_path / "triplets.csv").exists():
             shutil.rmtree(uploaded_data_path)
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
@@ -142,29 +143,26 @@ async def upload_data(
 
         # Add the triplets to the database
         triplets = pd.read_csv(f"{uploaded_data_path}/triplets.csv")
+        triplets_cads_ids = (
+            triplets[["reference_id", "left_id", "right_id"]].to_numpy().flatten()
+        )
 
         # Check if each value in the triplets corresponds to an image that is available (loaded + already there)
-        uploaded_images_path = uploaded_data_path / "images"
-        uploaded_images = set(os.listdir(uploaded_images_path))
-        all_images = set(os.listdir(images_path)) | uploaded_images
-        triplet_values = set(triplets.to_numpy().flatten())
+        uploaded_images = {
+            file.name.split(".")[0] for file in uploaded_images_path.iterdir()
+        }
+        all_images = {
+            file.name.split(".")[0] for file in images_path.iterdir()
+        } | uploaded_images
+        triplet_values = set(triplets_cads_ids)
 
         missing_images = triplet_values - all_images
 
         if missing_images:
-            uploaded_data_path.unlink()
+            shutil.rmtree(uploaded_data_path)
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Missing images for these triplet values: {missing_images}.",
-            )
-
-        # Check if there are extra images that do not have any value in the triplets
-        extra_images = uploaded_images - triplet_values
-        if extra_images:
-            uploaded_data_path.unlink()
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Extra images that do not have any value in the triplets: {extra_images}.",
+                detail=f"Missing images for these triplets ids: {missing_images}.",
             )
 
         # If checks pass, add triplets to the database and move images
@@ -176,7 +174,7 @@ async def upload_data(
                 images_path / filename,
             )
 
-        uploaded_data_path.unlink()
+        shutil.rmtree(uploaded_data_path)
 
         return JSONResponse(
             content={"message": "Data uploaded successfully."},
