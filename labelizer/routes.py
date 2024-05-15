@@ -2,7 +2,7 @@ import os
 import shutil
 import zipfile
 from pathlib import Path
-
+from config import get_app_config
 import pandas as pd
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
 from fastapi.responses import JSONResponse
@@ -16,17 +16,9 @@ from labelizer.utils import SelectedItemType
 
 router = APIRouter(tags=["Triplet Management"])
 
-#! ROOT_PATH has to be set as an environment variable, this is the path to the root of the project
-root_path = Path(os.environ["ROOT_PATH"])
-
-# Path to the images folder, where the images used by the backend are stored
-images_path = root_path / "images"
-
-# Path to the data folder, where the uploaded data is stored before being processed
-uploaded_data_path = root_path / "data" / "data"
-
 
 # Dependency on the database
+# todo to be moved
 def get_db() -> SessionLocal:
     db = SessionLocal()
     try:
@@ -35,13 +27,16 @@ def get_db() -> SessionLocal:
         db.close()
 
 
+app_config = get_app_config()
+
+
 @router.get(
     "/images/{image_id}",
     summary="Retrieve an image by its id.",
     status_code=status.HTTP_200_OK,
 )
 async def get_image(image_id: str) -> FileResponse:
-    return FileResponse(f"{images_path}/{image_id}")
+    return FileResponse(f"{app_config.images_path}/{image_id}")
 
 
 @router.get(
@@ -94,10 +89,25 @@ def set_triplet_label(
     status_code=status.HTTP_200_OK,
 )
 def download_db(user: AdminUserSession, db: Session = Depends(get_db)) -> FileResponse:
+    stream = get_db_excel_export(db)
+
+    now = time.strftime("%Y%m%d-%H%M")
+    filename = f"{now}_labelier_db.xlsx"
+
+    return Response(
+        content=stream.getvalue(),
+        headers={"Content-Disposition": f"attachment; filename={filename}"},
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    )
+
+
+def get_db_excel_export(db: Session) -> io.BytesIO:
     data = crud.get_all_data(db)
     data = pd.DataFrame(data)
-    data.to_csv("database.csv")
-    return FileResponse("database.csv")
+    stream = io.BytesIO()
+    data.to_excel(stream, index=False)
+    stream.seek(0)
+    return stream
 
 
 @router.post(
@@ -105,80 +115,89 @@ def download_db(user: AdminUserSession, db: Session = Depends(get_db)) -> FileRe
     summary="Upload new data, including images and triplets. The data has to be a zipped folder containing a csv file named triplets.csv and a folder named images containing the images. Needs to be authorized as an admin user.",
     status_code=status.HTTP_201_CREATED,
 )
-async def upload_data(
+async def upload_data_endpoint(
     user: AdminUserSession,
     file: UploadFile = File(...),
     db: Session = Depends(get_db),
 ) -> JSONResponse:
-    if file.filename.endswith(".zip"):
-        # Extract the csv file
-        with zipfile.ZipFile(file.file, "r") as zip_ref:
-            zip_ref.extractall("data")
+    upload_data()
 
-        if not Path(uploaded_data_path).exists():
-            shutil.rmtree(uploaded_data_path)
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="The root folder in the zip file should be named 'data'.",
-            )
 
-        uploaded_images_path = uploaded_data_path / "images"
-        if not Path(uploaded_data_path / "images").exists():
-            shutil.rmtree(uploaded_data_path)
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="The images folder should exist and be named 'images'.",
-            )
-
-        if not Path(uploaded_data_path / "triplets.csv").exists():
-            shutil.rmtree(uploaded_data_path)
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="The csv file should be named 'triplets.csv'.",
-            )
-
-        # Remove the desktop.ini file that is sometimes added by Windows
-        if Path(f"{uploaded_data_path}/images/desktop.ini").exists():
-            Path(f"{uploaded_data_path}/images/desktop.ini").unlink()
-
-        # Add the triplets to the database
-        triplets = pd.read_csv(f"{uploaded_data_path}/triplets.csv")
-        triplets_cads_ids = (
-            triplets[["reference_id", "left_id", "right_id"]].to_numpy().flatten()
+def upload_data(file: UploadFile):
+    filename = file.filename
+    if not filename.endswith(".zip"):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="The file should be a zip file.",
         )
 
-        # Check if each value in the triplets corresponds to an image that is available (loaded + already there)
-        uploaded_images = set(uploaded_images_path.iterdir())
-        uploaded_images_ids = {file.name.split(".")[0] for file in uploaded_images}
-        all_images_ids = {
-            file.name.split(".")[0] for file in images_path.iterdir()
-        } | uploaded_images_ids
-        triplet_values = set(triplets_cads_ids)
+    tmp_dir = tempfile.mkdtemp()
+    with zipfile.ZipFile(file.file, "r") as zip_ref:
+        zip_ref.extractall(tmp_dir)
 
-        missing_images_names = triplet_values - all_images_ids
+    uploaded_data_path = tmp_dir / "data"
 
-        if missing_images_names:
-            shutil.rmtree(uploaded_data_path)
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Missing images for these triplets ids: {missing_images_names}.",
-            )
+    # Extract the csv file
 
-        # If checks pass, add triplets to the database and move images
-        crud.create_labelized_triplets(db, triplets)
+    if not Path(uploaded_data_path).exists():
+        shutil.rmtree(tmp_dir)
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="The root folder in the zip file should be named 'data'.",
+        )
 
-        for file in uploaded_images:
-            shutil.move(
-                file,
-                images_path / file.name,
-            )
-
+    # Add the triplets to the database
+    if not Path(uploaded_data_path / "triplets.csv").exists():
         shutil.rmtree(uploaded_data_path)
-
-        return JSONResponse(
-            content={"message": "Data uploaded successfully."},
-            status_code=status.HTTP_201_CREATED,
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="The csv file should be named 'triplets.csv'.",
         )
+
+    triplets = pd.read_csv(f"{uploaded_data_path}/triplets.csv")
+    triplets_cads_ids = (
+        triplets[["reference_id", "left_id", "right_id"]].to_numpy().flatten()
+    )
+
+    # Check if each value in the triplets corresponds to an image that is available (loaded + already there)
+    uploaded_images_path = uploaded_data_path / "images"
+    if not Path(uploaded_data_path / "images").exists():
+        shutil.rmtree(tmp_dir)
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="The images folder should exist and be named 'images'.",
+        )
+    uploaded_images = set(uploaded_images_path.iterdir())
+    uploaded_images_ids = {file.name.split(".")[0] for file in uploaded_images}
+    all_images_ids = {
+        file.name.split(".")[0] for file in images_path.iterdir()
+    } | uploaded_images_ids
+    triplet_values = set(triplets_cads_ids)
+
+    missing_images_names = triplet_values - all_i
+
+    if missing_images_names:
+        shutil.rmtree(uploaded_data_path)
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Missing images for these triplets ids: {missing_images_names}.",
+        )
+
+    # If checks pass, add triplets to the database and move images
+    crud.create_labelized_triplets(db, triplets)
+
+    for file in uploaded_images:
+        shutil.move(
+            file,
+            images_path / file.name,
+        )
+
+    shutil.rmtree(tmp_dir)
+
+    return JSONResponse(
+        content={"message": "Data uploaded successfully."},
+        status_code=status.HTTP_201_CREATED,
+    )
     return None
 
 
