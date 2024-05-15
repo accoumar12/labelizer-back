@@ -50,9 +50,14 @@ def load_triplets(triplets_path: Path) -> tuple[pd.DataFrame, set[str]]:
     return triplets, set(triplets_ids)
 
 
+# TODO: implement a check linked with the canonical images
 def get_uploaded_images_ids(uploaded_images_path: Path) -> set[str]:
     uploaded_images = set(uploaded_images_path.iterdir())
-    return {file.name.split(".")[0] for file in uploaded_images}
+    return {
+        file.name.split(".")[0]
+        for file in uploaded_images
+        if not file.name.endswith("_canonical")
+    }
 
 
 def get_all_images_ids(uploaded_images_ids: set[str]) -> set[str]:
@@ -60,7 +65,9 @@ def get_all_images_ids(uploaded_images_ids: set[str]) -> set[str]:
     if not app_config.images_path.exists() or not any(app_config.images_path.iterdir()):
         return uploaded_images_ids
     return {
-        file.name.split(".")[0] for file in app_config.images_path.iterdir()
+        file.name.split(".")[0]
+        for file in app_config.images_path.iterdir()
+        if not file.name.endswith("_canonical")
     } | uploaded_images_ids
 
 
