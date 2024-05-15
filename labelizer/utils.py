@@ -57,6 +57,9 @@ def get_uploaded_images_ids(uploaded_images_path: Path) -> set[str]:
 
 
 def get_all_images_ids(uploaded_images_ids: set[str]) -> set[str]:
+    # We use lazy evaluation to avoid checking the content of the images folder if it does not exist
+    if not app_config.images_path.exists() or not any(app_config.images_path.iterdir()):
+        return uploaded_images_ids
     return {
         file.name.split(".")[0] for file in app_config.images_path.iterdir()
     } | uploaded_images_ids
@@ -70,7 +73,6 @@ def update_database(
     crud.create_labelized_triplets(db, triplets)
     uploaded_images = uploaded_images_path.iterdir()
     for file in uploaded_images:
-        shutil.move(
-            file,
-            app_config.images_path / file.name,
-        )
+        destination = app_config.images_path / file.name
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        shutil.move(file, destination)
