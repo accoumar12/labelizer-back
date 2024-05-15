@@ -15,7 +15,7 @@ def test_create_labelized_triplet() -> None:
         left_length=1,
         right_id="1",
         right_length=1,
-        model_id="1",
+        encoder_id="1",
     )
 
     result = crud.create_labelized_triplet(db, triplet)
@@ -37,7 +37,7 @@ def test_create_labelized_triplets() -> None:
                 "left_length": 1,
                 "right_id": "1",
                 "right_length": 1,
-                "model_id": "1",
+                "encoder_id": "1",
             }
         ]
     )
