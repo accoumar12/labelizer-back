@@ -1,33 +1,29 @@
-import os
 import shutil
-import zipfile
-from pathlib import Path
-from config import get_app_config
-import pandas as pd
+import time
+
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, Response
 from sqlalchemy.orm import Session
 from starlette.responses import FileResponse
 
 from labelizer import crud, schemas
+from labelizer.app_config import AppConfig
 from labelizer.core.api.auth.core import AdminUserSession, UserSession
-from labelizer.core.database.init_database import SessionLocal
-from labelizer.utils import SelectedItemType
+from labelizer.core.database.get_database import get_db
+from labelizer.utils import (
+    SelectedItemType,
+    check_structure_consistency,
+    extract_zip,
+    get_all_images_ids,
+    get_db_excel_export,
+    get_uploaded_images_ids,
+    load_triplets,
+    update_database,
+)
 
 router = APIRouter(tags=["Triplet Management"])
 
-
-# Dependency on the database
-# todo to be moved
-def get_db() -> SessionLocal:
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
-
-
-app_config = get_app_config()
+app_config = AppConfig()
 
 
 @router.get(
@@ -101,15 +97,6 @@ def download_db(user: AdminUserSession, db: Session = Depends(get_db)) -> FileRe
     )
 
 
-def get_db_excel_export(db: Session) -> io.BytesIO:
-    data = crud.get_all_data(db)
-    data = pd.DataFrame(data)
-    stream = io.BytesIO()
-    data.to_excel(stream, index=False)
-    stream.seek(0)
-    return stream
-
-
 @router.post(
     "/upload_data",
     summary="Upload new data, including images and triplets. The data has to be a zipped folder containing a csv file named triplets.csv and a folder named images containing the images. Needs to be authorized as an admin user.",
@@ -128,7 +115,7 @@ async def upload_data_endpoint(
     )
 
 
-def upload_data(file: UploadFile, db) -> None:
+def upload_data(file: UploadFile, db: Session = Depends(get_db)) -> None:
     filename = file.filename
     if not filename.endswith(".zip"):
         raise HTTPException(
@@ -136,57 +123,36 @@ def upload_data(file: UploadFile, db) -> None:
             detail="The file should be a zip file.",
         )
 
-    extract_zip()
+    tmp_path = extract_zip(file)
 
-    tmp_dir = tempfile.mkdtemp()
-    with zipfile.ZipFile(file.file, "r") as zip_ref:
-        zip_ref.extractall(tmp_dir)
-
-    uploaded_data_path = tmp_dir / "data"
-
-    # Extract the csv file
-    check_zip_format()
-
-    if not Path(uploaded_data_path).exists():
-        shutil.rmtree(tmp_dir)
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="The root folder in the zip file should be named 'data'.",
-        )
-
-    # Add the triplets to the database
-    triplets_path = uploaded_data_path / "triplets.csv"
-    if not triplets_path.exists():
-        shutil.rmtree(uploaded_data_path)
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="The csv file should be named 'triplets.csv'.",
-        )
-
-    triplets = pd.read_csv(triplets_path)
-    triplets_cads_ids = (
-        triplets[["reference_id", "left_id", "right_id"]].to_numpy().flatten()
+    uploaded_data_path = tmp_path / "data"
+    check_structure_consistency(
+        uploaded_data_path,
+        tmp_path,
+        "The zip file should contain a folder named 'data'.",
     )
 
-    # Check if each value in the triplets corresponds to an image that is available (loaded + already there)
+    triplets_path = uploaded_data_path / "triplets.csv"
+    check_structure_consistency(
+        triplets_path,
+        tmp_path,
+        "The zip file should contain a csv file named 'triplets.csv'.",
+    )
+
+    # We need to load both the whole triplets (that contain all the data around triplets) and only the ids, that will be used to compare with the images
+    triplets, triplets_ids = load_triplets(triplets_path)
+
     uploaded_images_path = uploaded_data_path / "images"
-    if not Path(uploaded_images_path).exists():
-        shutil.rmtree(tmp_dir)
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="The images folder should exist and be named 'images'.",
-        )
+    check_structure_consistency(
+        uploaded_images_path,
+        tmp_path,
+        "The data folder should contain a folder named 'images'.",
+    )
+    uploaded_images_ids = get_uploaded_images_ids(uploaded_images_path)
+    all_images_ids = get_all_images_ids(uploaded_images_ids)
 
-    check_images_availability()
-    uploaded_images = set(uploaded_images_path.iterdir())
-    uploaded_images_ids = {file.name.split(".")[0] for file in uploaded_images}
-    all_images_ids = {
-        file.name.split(".")[0] for file in app_config.images_path.iterdir()
-    } | uploaded_images_ids
-    triplet_values = set(triplets_cads_ids)
-
-    missing_images_names = triplet_values - all_images_ids
-
+    # Check if for any triplet there will be a corresponding image
+    missing_images_names = triplets_ids - all_images_ids
     if missing_images_names:
         shutil.rmtree(uploaded_data_path)
         raise HTTPException(
@@ -195,18 +161,8 @@ def upload_data(file: UploadFile, db) -> None:
         )
 
     # If checks pass, add triplets to the database and move images
-
-    update_database()
-
-    crud.create_labelized_triplets(db, triplets)
-
-    for file in uploaded_images:
-        shutil.move(
-            file,
-            app_config.images_path / file.name,
-        )
-
-    shutil.rmtree(tmp_dir)
+    update_database(db, triplets, uploaded_images_ids)
+    shutil.rmtree(tmp_path)
 
 
 @router.delete(

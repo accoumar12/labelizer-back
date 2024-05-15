@@ -1,7 +1,7 @@
 from sqlalchemy import Column, Enum, Float, Integer, String
 
 from labelizer.core.database.init_database import Base
-from labelizer.utils import SelectedItemType
+from labelizer.types import SelectedItemType
 
 # This file contains the SQLAlchemy models, while the schemas file contains the Pydantic models
 

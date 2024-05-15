@@ -1,8 +1,71 @@
-from enum import Enum
+from __future__ import annotations
+import shutil
+from pathlib import Path
+from fastapi import UploadFile, status, HTTPException
+import zipfile
+import tempfile
+import io
+from labelizer import crud
+import pandas as pd
+from sqlalchemy.orm import Session
+from labelizer.app_config import AppConfig
+
+app_config = AppConfig()
 
 
-class SelectedItemType(str, Enum):
-    LEFT = "left"
-    RIGHT = "right"
-    DONT_KNOW = "dont_know"
-    # ? Add an option if the two left and right items tend to be the most similar, make it more complex for the next iteration
+def get_db_excel_export(db: Session) -> io.BytesIO:
+    data = crud.get_all_data(db)
+    data = pd.DataFrame(data)
+    stream = io.BytesIO()
+    data.to_excel(stream, index=False)
+    stream.seek(0)
+    return stream
+
+
+def extract_zip(file: UploadFile) -> str:
+    tmp_path = tempfile.mkdtemp()
+    with zipfile.ZipFile(file.file, "r") as zip_ref:
+        zip_ref.extractall(tmp_path)
+    return tmp_path
+
+
+def check_structure_consistency(
+    path_to_be_present: Path,
+    path_to_be_removed: Path,
+    detail: str,
+) -> None:
+    if not path_to_be_present.exists():
+        shutil.rmtree(path_to_be_removed)
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=detail)
+
+
+def load_triplets(triplets_path: Path) -> tuple[pd.DataFrame, set[str]]:
+    triplets = pd.read_csv(triplets_path)
+    triplets_ids = (
+        triplets[["reference_id", "left_id", "right_id"]].to_numpy().flatten()
+    )
+    return triplets, set(triplets_ids)
+
+
+def get_uploaded_images_ids(uploaded_images_path: Path) -> set[str]:
+    uploaded_images = set(uploaded_images_path.iterdir())
+    return {file.name.split(".")[0] for file in uploaded_images}
+
+
+def get_all_images_ids(uploaded_images_ids: set[str]) -> set[str]:
+    return {
+        file.name.split(".")[0] for file in app_config.images_path.iterdir()
+    } | uploaded_images_ids
+
+
+def update_database(
+    db: Session,
+    triplets: pd.DataFrame,
+    uploaded_images: set[Path],
+) -> None:
+    crud.create_labelized_triplets(db, triplets)
+    for file in uploaded_images:
+        shutil.move(
+            file,
+            app_config.images_path / file.name,
+        )

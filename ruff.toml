@@ -20,4 +20,5 @@ ignore = [
     "EXE005", # Shebang should be at the beginning of the file
     "ARG001", # Unused arguments
     "B008", # Check for function calls in default function arguments
+    "ANN102", # Check that cls has type annotation
 ]

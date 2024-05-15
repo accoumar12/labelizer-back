@@ -2,13 +2,9 @@
 run:
 	python main.py
 
-## Post the seed data into the database
-test-seed:
-	python tests/seed_data.py
-
 ## Delete the database (useful for testing)
 delete_db:
-	rm -rf labelizer/core/database/labelizer.db
+	rm -rf data/labelizer.db
 #################################################################################
 # Self Documenting Commands                                                     #
 #################################################################################
