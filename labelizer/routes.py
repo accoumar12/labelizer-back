@@ -123,7 +123,7 @@ async def upload_data(
             )
 
         uploaded_images_path = uploaded_data_path / "images"
-        if not Path(uploaded_images_path).exists():
+        if not Path(uploaded_data_path / "images").exists():
             shutil.rmtree(uploaded_data_path)
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
@@ -148,30 +148,29 @@ async def upload_data(
         )
 
         # Check if each value in the triplets corresponds to an image that is available (loaded + already there)
-        uploaded_images = {
-            file.name.split(".")[0] for file in uploaded_images_path.iterdir()
-        }
-        all_images = {
+        uploaded_images = set(uploaded_images_path.iterdir())
+        uploaded_images_ids = {file.name.split(".")[0] for file in uploaded_images}
+        all_images_ids = {
             file.name.split(".")[0] for file in images_path.iterdir()
-        } | uploaded_images
+        } | uploaded_images_ids
         triplet_values = set(triplets_cads_ids)
 
-        missing_images = triplet_values - all_images
+        missing_images_names = triplet_values - all_images_ids
 
-        if missing_images:
+        if missing_images_names:
             shutil.rmtree(uploaded_data_path)
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Missing images for these triplets ids: {missing_images}.",
+                detail=f"Missing images for these triplets ids: {missing_images_names}.",
             )
 
         # If checks pass, add triplets to the database and move images
         crud.create_labelized_triplets(db, triplets)
 
-        for filename in uploaded_images:
+        for file in uploaded_images:
             shutil.move(
-                uploaded_images_path / filename,
-                images_path / filename,
+                file,
+                images_path / file.name,
             )
 
         shutil.rmtree(uploaded_data_path)
