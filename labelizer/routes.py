@@ -98,22 +98,17 @@ async def make_triplet(
 )
 async def get_triplet_stats(
     user: UserSession,
-    validation: bool = False,
     db: Session = Depends(get_db),
 ) -> schemas.TripletStats:
-    labeled_count = (
-        crud.count_labeled_validation_triplets(db)
-        if validation
-        else crud.count_labeled_triplets(db)
-    )
-    unlabeled_count = (
-        crud.count_unlabeled_validation_triplets(db)
-        if validation
-        else crud.count_unlabeled_triplets(db)
-    )
+    labeled_count = crud.count_labeled_triplets(db)
+    unlabeled_count = crud.count_unlabeled_triplets(db)
+    validation_labeled_count = crud.count_labeled_validation_triplets(db)
+    validation_unlabeled_count = crud.count_unlabeled_validation_triplets(db)
     return schemas.TripletStats(
         labeled=labeled_count,
         unlabeled=unlabeled_count,
+        validation_labeled=validation_labeled_count,
+        validation_unlabeled=validation_unlabeled_count,
     )
 
 

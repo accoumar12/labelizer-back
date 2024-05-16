@@ -71,3 +71,5 @@ class ValidationTriplet(BaseModel):
 class TripletStats(BaseModel):
     labeled: int
     unlabeled: int
+    validation_labeled: int
+    validation_unlabeled: int
