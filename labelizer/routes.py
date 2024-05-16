@@ -41,12 +41,13 @@ async def get_image(image_id: str, canonical: bool = False) -> FileResponse:
     "/triplet",
     summary="Get the triplet for the user of the app.",
     status_code=status.HTTP_200_OK,
-    response_model=schemas.LabelizerTripletResponse | schemas.ValidationTriplet,
+    response_model=schemas.LabelizerTripletResponse
+    | schemas.LabelizerValidationTripletResponse,
 )
 def make_triplet(
     validation: bool = False,
     db: Session = Depends(get_db),
-) -> schemas.LabelizerTripletResponse | schemas.ValidationTriplet:
+) -> schemas.LabelizerTripletResponse | schemas.LabelizerValidationTripletResponse:
     triplet = (
         crud.get_first_unlabeled_validation_triplet(db)
         if validation
@@ -70,6 +71,7 @@ def make_triplet(
             left_length=triplet.left_length,
             left_encoder_id=triplet.left_encoder_id,
             right_id=triplet.right_id,
+            right_length=triplet.right_length,
             right_encoder_id=triplet.right_encoder_id,
         )
     return schemas.LabelizerTripletResponse(

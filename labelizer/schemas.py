@@ -28,6 +28,7 @@ class LabelizerValidationTripletResponse(BaseModel):
     left_length: float
     left_encoder_id: str
     right_id: str
+    right_length: float
     right_encoder_id: str
 
     class Config:
