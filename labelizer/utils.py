@@ -81,23 +81,6 @@ def upload_data(file: UploadFile, db: Session = Depends(get_db)) -> None:
         "The zip file should contain a folder named 'data'.",
     )
 
-    triplets_path = uploaded_data_path / "triplets.csv"
-    check_structure_consistency(
-        triplets_path,
-        tmp_path,
-        "The zip file should contain a csv file named 'triplets.csv'.",
-    )
-
-    validation_triplets_path = uploaded_data_path / "validation_triplets.csv"
-    check_structure_consistency(
-        validation_triplets_path,
-        tmp_path,
-        "The zip file should contain a csv file named 'validation_triplets.csv'.",
-    )
-
-    # We need to load both the whole triplets (that contain all the data around triplets) and only the ids, that will be used to compare with the images
-    triplets, triplets_ids = load_triplets(triplets_path)
-
     uploaded_images_path = uploaded_data_path / "images"
     check_structure_consistency(
         uploaded_images_path,
@@ -107,15 +90,41 @@ def upload_data(file: UploadFile, db: Session = Depends(get_db)) -> None:
     uploaded_images_ids = get_uploaded_images_ids(uploaded_images_path)
     all_images_ids = get_all_images_ids(uploaded_images_ids)
 
-    # Check if for any triplet there will be a corresponding image
+    triplets_path = uploaded_data_path / "triplets.csv"
+    check_structure_consistency(
+        triplets_path,
+        tmp_path,
+        "The zip file should contain a csv file named 'triplets.csv'.",
+    )
+
+    # We need to load both the whole triplets (that contain all the data around triplets) and only the ids, that will be used to compare with the images
+    triplets, triplets_ids = load_triplets(triplets_path)
+    check_match_triplets_images(triplets_ids, all_images_ids)
+
+    validation_triplets_path = uploaded_data_path / "validation_triplets.csv"
+    check_structure_consistency(
+        validation_triplets_path,
+        tmp_path,
+        "The zip file should contain a csv file named 'validation_triplets.csv'.",
+    )
+
+    validation_triplets, validation_triplets_ids = load_triplets(
+        validation_triplets_path,
+    )
+    check_match_triplets_images(validation_triplets_ids, all_images_ids)
+
+    # If checks pass, add triplets to the database and move images
+    update_database(db, triplets, validation_triplets, uploaded_images_path)
+    shutil.rmtree(tmp_path)
+
+
+def check_match_triplets_images(
+    triplets_ids: set[str],
+    all_images_ids: set[str],
+) -> None:
     missing_images_names = triplets_ids - all_images_ids
     if missing_images_names:
-        shutil.rmtree(uploaded_data_path)
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"Missing images for these ids: {missing_images_names}.",
         )
-
-    # If checks pass, add triplets to the database and move images
-    update_database(db, triplets, uploaded_images_path)
-    shutil.rmtree(tmp_path)

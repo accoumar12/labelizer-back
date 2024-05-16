@@ -23,9 +23,11 @@ def get_db_excel_export(db: Session) -> io.BytesIO:
 def update_database(
     db: Session,
     triplets: pd.DataFrame,
+    validation_triplets: pd.DataFrame,
     uploaded_images_path: Path,
 ) -> None:
     crud.create_labelized_triplets(db, triplets)
+    crud.create_validation_triplets(db, validation_triplets)
     uploaded_images = uploaded_images_path.iterdir()
     for file in uploaded_images:
         destination = app_config.images_path / file.name

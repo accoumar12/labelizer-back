@@ -30,7 +30,6 @@ setup_logging(level=logging.INFO)
     "/images/{image_id}",
     summary="Retrieve an image by its id. Does not need the extension. If you need the canonical image, provide 'canonical=true' as a query parameter.",
     status_code=status.HTTP_200_OK,
-    # response_model=FileResponse,
 )
 async def get_image(image_id: str, canonical: bool = False) -> FileResponse:
     suffix = "_canonical" if canonical else ""
@@ -93,13 +92,21 @@ def set_triplet_label(
     user: UserSession,
     triplet_id: str,
     label: SelectedItemType,
+    validation: bool = False,
     db: Session = Depends(get_db),
 ) -> JSONResponse:
     try:
-        crud.set_triplet_label(db, triplet_id, label, user.uid)
+        crud.set_validation_triplet_label(
+            db,
+            triplet_id,
+            label,
+            user.uid,
+        ) if validation else crud.set_triplet_label(db, triplet_id, label, user.uid)
     except ValueError as e:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND) from e
-    logging.info("Triplet %s labeled as %s.", triplet_id, label)
+    logging.info(
+        " Validation Triplet %s labeled as %s.", triplet_id, label
+    ) if validation else logging.info("Triplet %s labeled as %s.", triplet_id, label)
     return JSONResponse(
         content={"message": "Label set successfully."},
         status_code=status.HTTP_200_OK,
@@ -115,7 +122,7 @@ def download_db(user: AdminUserSession, db: Session = Depends(get_db)) -> FileRe
     stream = get_db_excel_export(db)
 
     now = time.strftime("%Y%m%d-%H%M")
-    filename = f"{now}_labelier_db.xlsx"
+    filename = f"{now}_labeliser_db.xlsx"
 
     logging.info("Database downloaded.")
     return Response(
