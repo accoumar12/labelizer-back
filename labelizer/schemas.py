@@ -52,7 +52,6 @@ class LabelizedTriplet(BaseModel):
 
 
 class ValidationTriplet(BaseModel):
-    id: int
     reference_id: str
     reference_length: float
     left_id: str

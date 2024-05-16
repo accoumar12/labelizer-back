@@ -49,6 +49,22 @@ class ValidationTriplet(Base):
     left_length = Column(Float, index=True)
     left_encoder_id = Column(String, index=True)
     right_id = Column(String, index=True)
+    right_length = Column(Float, index=True)
     right_encoder_id = Column(String, index=True)
     label = Column(Enum(SelectedItemType), index=True)
     user_id = Column(String, index=True)
+
+    def to_dict(self) -> dict:
+        return {
+            "id": self.id,
+            "reference_id": self.reference_id,
+            "reference_length": self.reference_length,
+            "left_id": self.left_id,
+            "left_length": self.left_length,
+            "left_encoder_id": self.left_encoder_id,
+            "right_id": self.right_id,
+            "right_length": self.right_length,
+            "right_encoder_id": self.right_encoder_id,
+            "label": self.label,
+            "user_id": self.user_id,
+        }
