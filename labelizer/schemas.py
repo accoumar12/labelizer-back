@@ -35,3 +35,19 @@ class LabelizedTriplet(BaseModel):
 
     class Config:
         orm_mode = True
+
+
+class ValidationTriplet(BaseModel):
+    id: int
+    reference_id: str
+    reference_length: float
+    left_id: str
+    left_length: float
+    left_encoder_id: str
+    right_id: str
+    right_encoder_id: str
+    label: SelectedItemType | None = None
+    user_id: str | None = None
+
+    class Config:
+        orm_mode = True

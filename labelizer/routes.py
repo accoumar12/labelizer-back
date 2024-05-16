@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import shutil
 import time
 
@@ -30,6 +32,7 @@ app_config = get_app_config()
     "/images/{image_id}",
     summary="Retrieve an image by its id. Does not need the extension. If you need the canonical image, provide 'canonical=true' as a query parameter.",
     status_code=status.HTTP_200_OK,
+    response_model=FileResponse,
 )
 async def get_image(image_id: str, canonical: bool = False) -> FileResponse:
     suffix = "_canonical" if canonical else ""
@@ -40,8 +43,11 @@ async def get_image(image_id: str, canonical: bool = False) -> FileResponse:
     "/triplet",
     summary="Get the triplet for the user of the app.",
     status_code=status.HTTP_200_OK,
+    response_model=schemas.LabelizerTripletResponse | schemas.ValidationTriplet,
 )
-def make_triplet(db: Session = Depends(get_db)) -> schemas.LabelizerTripletResponse:
+def make_triplet(
+    db: Session = Depends(get_db),
+) -> schemas.LabelizerTripletResponse | schemas.ValidationTriplet:
     triplet = crud.get_first_unlabeled_triplet(db)
     if triplet is None:
         raise HTTPException(

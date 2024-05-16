@@ -37,3 +37,18 @@ class LabelizedTriplet(Base):
             "label": self.label,
             "user_id": self.user_id,
         }
+
+
+class ValidationTriplet(Base):
+    __tablename__ = "validation_triplets"
+
+    id = Column(Integer, primary_key=True, index=True)
+    reference_id = Column(String, index=True)
+    reference_length = Column(Float, index=True)
+    left_id = Column(String, index=True)
+    left_length = Column(Float, index=True)
+    left_encoder_id = Column(String, index=True)
+    right_id = Column(String, index=True)
+    right_encoder_id = Column(String, index=True)
+    label = Column(Enum(SelectedItemType), index=True)
+    user_id = Column(String, index=True)
