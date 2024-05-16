@@ -1,8 +1,6 @@
-import logging
-from math import log
 from __future__ import annotations
 
-import shutil
+import logging
 import time
 
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
@@ -15,16 +13,11 @@ from labelizer.app_config import get_app_config
 from labelizer.core.api.auth.core import AdminUserSession, UserSession
 from labelizer.core.api.logging import setup_logging
 from labelizer.core.database.get_database import get_db
-from labelizer.types import SelectedItemType
-from labelizer.utils import (
-    check_structure_consistency,
-    extract_zip,
-    get_all_images_ids,
+from labelizer.core.database.utils import (
     get_db_excel_export,
-    get_uploaded_images_ids,
-    load_triplets,
-    update_database,
 )
+from labelizer.types import SelectedItemType
+from labelizer.utils import upload_data
 
 router = APIRouter(tags=["Triplet Management"])
 
@@ -37,7 +30,7 @@ setup_logging(level=logging.INFO)
     "/images/{image_id}",
     summary="Retrieve an image by its id. Does not need the extension. If you need the canonical image, provide 'canonical=true' as a query parameter.",
     status_code=status.HTTP_200_OK,
-    response_model=FileResponse,
+    # response_model=FileResponse,
 )
 async def get_image(image_id: str, canonical: bool = False) -> FileResponse:
     suffix = "_canonical" if canonical else ""
@@ -149,56 +142,6 @@ async def upload_data_endpoint(
         content={"message": "Data uploaded successfully."},
         status_code=status.HTTP_201_CREATED,
     )
-
-
-def upload_data(file: UploadFile, db: Session = Depends(get_db)) -> None:
-    filename = file.filename
-    if not filename.endswith(".zip"):
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="The file should be a zip file.",
-        )
-
-    tmp_path = extract_zip(file)
-
-    uploaded_data_path = tmp_path / "data"
-    check_structure_consistency(
-        uploaded_data_path,
-        tmp_path,
-        "The zip file should contain a folder named 'data'.",
-    )
-
-    triplets_path = uploaded_data_path / "triplets.csv"
-    check_structure_consistency(
-        triplets_path,
-        tmp_path,
-        "The zip file should contain a csv file named 'triplets.csv'.",
-    )
-
-    # We need to load both the whole triplets (that contain all the data around triplets) and only the ids, that will be used to compare with the images
-    triplets, triplets_ids = load_triplets(triplets_path)
-
-    uploaded_images_path = uploaded_data_path / "images"
-    check_structure_consistency(
-        uploaded_images_path,
-        tmp_path,
-        "The data folder should contain a folder named 'images'.",
-    )
-    uploaded_images_ids = get_uploaded_images_ids(uploaded_images_path)
-    all_images_ids = get_all_images_ids(uploaded_images_ids)
-
-    # Check if for any triplet there will be a corresponding image
-    missing_images_names = triplets_ids - all_images_ids
-    if missing_images_names:
-        shutil.rmtree(uploaded_data_path)
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Missing images for these ids: {missing_images_names}.",
-        )
-
-    # If checks pass, add triplets to the database and move images
-    update_database(db, triplets, uploaded_images_path)
-    shutil.rmtree(tmp_path)
 
 
 @router.delete(
