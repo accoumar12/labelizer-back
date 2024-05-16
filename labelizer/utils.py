@@ -9,11 +9,11 @@ import pandas as pd
 from fastapi import Depends, HTTPException, UploadFile, status
 from sqlalchemy.orm import Session
 
-from labelizer.app_config import get_app_config
+from labelizer.app_config import AppConfig
 from labelizer.core.database.get_database import get_db
 from labelizer.core.database.utils import update_database
 
-app_config = get_app_config()
+app_config = AppConfig()
 
 
 def check_structure_consistency(

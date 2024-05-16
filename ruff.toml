@@ -13,6 +13,8 @@ ignore = [
     "S101", # Assert detected
     "TD002", # TODO author needed
     "TD003", # Missing TODO link to issues
+    "ANN002", # Missing type annotation for args
+    "ANN003", # Missing type annotation for kwargs
     "ANN101", # Chef that self has type annotation
     "NPY002", # Replace numpy.random.seed
     "PERF401", # Replace with list comprehension

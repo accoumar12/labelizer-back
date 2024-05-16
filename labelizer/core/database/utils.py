@@ -6,9 +6,9 @@ import pandas as pd
 from sqlalchemy.orm import Session
 
 from labelizer import crud
-from labelizer.app_config import get_app_config
+from labelizer.app_config import AppConfig
 
-app_config = get_app_config()
+app_config = AppConfig()
 
 
 def get_db_excel_export(db: Session) -> io.BytesIO:
