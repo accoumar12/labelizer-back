@@ -39,14 +39,14 @@ def load_triplets(triplets_path: Path) -> tuple[pd.DataFrame, set[str]]:
 def get_uploaded_images_ids(uploaded_images_path: Path) -> set[str]:
     uploaded_images = set(uploaded_images_path.iterdir())
     image_ids = {
-        file.name.split(".")[0].replace("_canonical", "")
+        file.name.split(".")[0]
         for file in uploaded_images
-        if not file.name.endswith("_canonical")
+        if not file.name.split(".")[0].endswith("_canonical")
     }
     canonical_image_ids = {
         file.name.split("_canonical")[0]
         for file in uploaded_images
-        if file.name.endswith("_canonical")
+        if file.name.split(".")[0].endswith("_canonical")
     }
     if image_ids != canonical_image_ids:
         # We have to use this method because we do not know which set is missing elements
