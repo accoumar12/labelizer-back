@@ -15,7 +15,7 @@ def create_labelized_triplet(
     db: Session,
     triplet: schemas.LabelizedTriplet,
 ) -> models.LabelizedTriplet:
-    db_triplet = models.LabelizedTriplet(**triplet.dict())
+    db_triplet = models.LabelizedTriplet(**triplet.model_dump())
     db.add(db_triplet)
     db.commit()
     db.refresh(db_triplet)
@@ -26,7 +26,7 @@ def create_validation_triplet(
     db: Session,
     triplet: schemas.ValidationTriplet,
 ) -> models.ValidationTriplet:
-    db_triplet = models.ValidationTriplet(**triplet.dict())
+    db_triplet = models.ValidationTriplet(**triplet.model_dump())
     db.add(db_triplet)
     db.commit()
     db.refresh(db_triplet)

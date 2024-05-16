@@ -1,16 +1,14 @@
 from __future__ import annotations
 
-import io
 import shutil
 import tempfile
 import zipfile
 from pathlib import Path
 
 import pandas as pd
-from fastapi import HTTPException, UploadFile, status, Depends
+from fastapi import Depends, HTTPException, UploadFile, status
 from sqlalchemy.orm import Session
 
-from labelizer import crud
 from labelizer.app_config import get_app_config
 from labelizer.core.database.get_database import get_db
 from labelizer.core.database.utils import update_database

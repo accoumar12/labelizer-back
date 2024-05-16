@@ -144,28 +144,6 @@ async def set_triplet_label(
     )
 
 
-@router.get(
-    "/download_db",
-    summary="Download all the database in the csv format. Needs to be authorized as an admin user.",
-    status_code=status.HTTP_200_OK,
-)
-async def download_db(
-    user: AdminUserSession,
-    db: Session = Depends(get_db),
-) -> FileResponse:
-    stream = get_db_excel_export(db)
-
-    now = time.strftime("%Y%m%d-%H%M")
-    filename = f"{now}_labeliser_db.xlsx"
-
-    logging.info("Database downloaded.")
-    return Response(
-        content=stream.getvalue(),
-        headers={"Content-Disposition": f"attachment; filename={filename}"},
-        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-    )
-
-
 @router.post(
     "/upload_data",
     summary="Upload new data, including images and triplets. The data has to be a zipped folder containing a csv file named triplets.csv and a folder named images containing the images. Needs to be authorized as an admin user.",
@@ -182,6 +160,28 @@ async def upload_data_endpoint(
     return JSONResponse(
         content={"message": "Data uploaded successfully."},
         status_code=status.HTTP_201_CREATED,
+    )
+
+
+@router.get(
+    "/download_db",
+    summary="Download all the database in the excel format. Needs to be authorized as an admin user.",
+    status_code=status.HTTP_200_OK,
+)
+async def download_db(
+    user: AdminUserSession,
+    db: Session = Depends(get_db),
+) -> FileResponse:
+    stream = get_db_excel_export(db)
+
+    now = time.strftime("%Y%m%d-%H%M")
+    filename = f"{now}_labeliser_db.xlsx"
+
+    logging.info("Database downloaded.")
+    return Response(
+        content=stream.getvalue(),
+        headers={"Content-Disposition": f"attachment; filename={filename}"},
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     )
 
 
