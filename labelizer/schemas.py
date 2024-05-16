@@ -17,7 +17,7 @@ class LabelizerTripletResponse(BaseModel):
     right_length: float
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class LabelizerValidationTripletResponse(BaseModel):
@@ -32,7 +32,7 @@ class LabelizerValidationTripletResponse(BaseModel):
     right_encoder_id: str
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class LabelizedTriplet(BaseModel):
@@ -49,7 +49,7 @@ class LabelizedTriplet(BaseModel):
     user_id: str | None = None
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class ValidationTriplet(BaseModel):
@@ -65,4 +65,4 @@ class ValidationTriplet(BaseModel):
     user_id: str | None = None
 
     class Config:
-        orm_mode = True
+        from_attributes = True
