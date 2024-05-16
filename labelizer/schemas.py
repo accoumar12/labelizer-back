@@ -58,6 +58,7 @@ class ValidationTriplet(BaseModel):
     left_length: float
     left_encoder_id: str
     right_id: str
+    right_length: float
     right_encoder_id: str
     label: SelectedItemType | None = None
     user_id: str | None = None
