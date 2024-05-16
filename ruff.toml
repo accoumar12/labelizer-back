@@ -21,4 +21,6 @@ ignore = [
     "ARG001", # Unused arguments
     "B008", # Check for function calls in default function arguments
     "ANN102", # Check that cls has type annotation
+    "FBT001", # Boolean in function definition
+    "FBT002", # Default boolean in function definition
 ]

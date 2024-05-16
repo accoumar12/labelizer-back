@@ -28,11 +28,12 @@ app_config = get_app_config()
 
 @router.get(
     "/images/{image_id}",
-    summary="Retrieve an image by its id. Does not need the extension. If you need the canonical image, suffix the id with '_canonical'.",
+    summary="Retrieve an image by its id. Does not need the extension. If you need the canonical image, provide 'canonical=true' as a query parameter.",
     status_code=status.HTTP_200_OK,
 )
-async def get_image(image_id: str) -> FileResponse:
-    return FileResponse(f"{app_config.images_path}/{image_id}.stp.png")
+async def get_image(image_id: str, canonical: bool = False) -> FileResponse:
+    suffix = "_canonical" if canonical else ""
+    return FileResponse(f"{app_config.images_path}/{image_id}{suffix}.stp.png")
 
 
 @router.get(
