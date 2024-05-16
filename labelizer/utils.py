@@ -7,29 +7,15 @@ import zipfile
 from pathlib import Path
 
 import pandas as pd
-from fastapi import HTTPException, UploadFile, status
+from fastapi import HTTPException, UploadFile, status, Depends
 from sqlalchemy.orm import Session
 
 from labelizer import crud
 from labelizer.app_config import get_app_config
+from labelizer.core.database.get_database import get_db
+from labelizer.core.database.utils import update_database
 
 app_config = get_app_config()
-
-
-def get_db_excel_export(db: Session) -> io.BytesIO:
-    data = crud.get_all_data(db)
-    data = pd.DataFrame(data)
-    stream = io.BytesIO()
-    data.to_excel(stream, index=False)
-    stream.seek(0)
-    return stream
-
-
-def extract_zip(file: UploadFile) -> Path:
-    tmp_path = Path(tempfile.mkdtemp())
-    with zipfile.ZipFile(file.file, "r") as zip_ref:
-        zip_ref.extractall(tmp_path)
-    return tmp_path
 
 
 def check_structure_consistency(
@@ -71,14 +57,74 @@ def get_all_images_ids(uploaded_images_ids: set[str]) -> set[str]:
     } | uploaded_images_ids
 
 
-def update_database(
-    db: Session,
-    triplets: pd.DataFrame,
-    uploaded_images_path: Path,
+def extract_zip(file: UploadFile) -> Path:
+    tmp_path = Path(tempfile.mkdtemp())
+    with zipfile.ZipFile(file.file, "r") as zip_ref:
+        zip_ref.extractall(tmp_path)
+    return tmp_path
+
+
+def upload_data(file: UploadFile, db: Session = Depends(get_db)) -> None:
+    filename = file.filename
+    if not filename.endswith(".zip"):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="The file should be a zip file.",
+        )
+
+    tmp_path = extract_zip(file)
+
+    uploaded_data_path = tmp_path / "data"
+    check_structure_consistency(
+        uploaded_data_path,
+        tmp_path,
+        "The zip file should contain a folder named 'data'.",
+    )
+
+    uploaded_images_path = uploaded_data_path / "images"
+    check_structure_consistency(
+        uploaded_images_path,
+        tmp_path,
+        "The data folder should contain a folder named 'images'.",
+    )
+    uploaded_images_ids = get_uploaded_images_ids(uploaded_images_path)
+    all_images_ids = get_all_images_ids(uploaded_images_ids)
+
+    triplets_path = uploaded_data_path / "triplets.csv"
+    check_structure_consistency(
+        triplets_path,
+        tmp_path,
+        "The zip file should contain a csv file named 'triplets.csv'.",
+    )
+
+    # We need to load both the whole triplets (that contain all the data around triplets) and only the ids, that will be used to compare with the images
+    triplets, triplets_ids = load_triplets(triplets_path)
+    check_match_triplets_images(triplets_ids, all_images_ids)
+
+    validation_triplets_path = uploaded_data_path / "validation_triplets.csv"
+    check_structure_consistency(
+        validation_triplets_path,
+        tmp_path,
+        "The zip file should contain a csv file named 'validation_triplets.csv'.",
+    )
+
+    validation_triplets, validation_triplets_ids = load_triplets(
+        validation_triplets_path,
+    )
+    check_match_triplets_images(validation_triplets_ids, all_images_ids)
+
+    # If checks pass, add triplets to the database and move images
+    update_database(db, triplets, validation_triplets, uploaded_images_path)
+    shutil.rmtree(tmp_path)
+
+
+def check_match_triplets_images(
+    triplets_ids: set[str],
+    all_images_ids: set[str],
 ) -> None:
-    crud.create_labelized_triplets(db, triplets)
-    uploaded_images = uploaded_images_path.iterdir()
-    app_config.images_path.mkdir(parents=True, exist_ok=True)
-    for file in uploaded_images:
-        destination = app_config.images_path / file.name
-        shutil.move(file, destination)
+    missing_images_names = triplets_ids - all_images_ids
+    if missing_images_names:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Missing images for these ids: {missing_images_names}.",
+        )

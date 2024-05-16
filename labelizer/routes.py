@@ -1,6 +1,6 @@
+from __future__ import annotations
+
 import logging
-from math import log
-import shutil
 import time
 
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
@@ -13,16 +13,11 @@ from labelizer.app_config import get_app_config
 from labelizer.core.api.auth.core import AdminUserSession, UserSession
 from labelizer.core.api.logging import setup_logging
 from labelizer.core.database.get_database import get_db
-from labelizer.types import SelectedItemType
-from labelizer.utils import (
-    check_structure_consistency,
-    extract_zip,
-    get_all_images_ids,
+from labelizer.core.database.utils import (
     get_db_excel_export,
-    get_uploaded_images_ids,
-    load_triplets,
-    update_database,
 )
+from labelizer.types import SelectedItemType
+from labelizer.utils import upload_data
 
 router = APIRouter(tags=["Triplet Management"])
 
@@ -46,21 +41,45 @@ async def get_image(image_id: str, canonical: bool = False) -> FileResponse:
     "/triplet",
     summary="Get the triplet for the user of the app.",
     status_code=status.HTTP_200_OK,
+    response_model=schemas.LabelizerTripletResponse
+    | schemas.LabelizerValidationTripletResponse,
 )
-def make_triplet(db: Session = Depends(get_db)) -> schemas.LabelizerTripletResponse:
-    triplet = crud.get_first_unlabeled_triplet(db)
+def make_triplet(
+    validation: bool = False,
+    db: Session = Depends(get_db),
+) -> schemas.LabelizerTripletResponse | schemas.LabelizerValidationTripletResponse:
+    triplet = (
+        crud.get_first_unlabeled_validation_triplet(db)
+        if validation
+        else crud.get_first_unlabeled_triplet(db)
+    )
     if triplet is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="No unlabeled triplet found.",
         )
-    logging.info("Triplet %s retrieved.", triplet.id)
+    logging.info(
+        "Validation Triplet %s retrieved.",
+        triplet.id,
+    ) if validation else logging.info("Triplet %s retrieved.", triplet.id)
+    if validation:
+        return schemas.LabelizerValidationTripletResponse(
+            id=triplet.id,
+            reference_id=triplet.reference_id,
+            reference_length=triplet.reference_length,
+            left_id=triplet.left_id,
+            left_length=triplet.left_length,
+            left_encoder_id=triplet.left_encoder_id,
+            right_id=triplet.right_id,
+            right_length=triplet.right_length,
+            right_encoder_id=triplet.right_encoder_id,
+        )
     return schemas.LabelizerTripletResponse(
         id=triplet.id,
         reference_id=triplet.reference_id,
         reference_length=triplet.reference_length,
         left_id=triplet.left_id,
-        left_length=triplet.reference_length,
+        left_length=triplet.left_length,
         right_id=triplet.right_id,
         right_length=triplet.right_length,
     )
@@ -75,13 +94,21 @@ def set_triplet_label(
     user: UserSession,
     triplet_id: str,
     label: SelectedItemType,
+    validation: bool = False,
     db: Session = Depends(get_db),
 ) -> JSONResponse:
     try:
-        crud.set_triplet_label(db, triplet_id, label, user.uid)
+        crud.set_validation_triplet_label(
+            db,
+            triplet_id,
+            label,
+            user.uid,
+        ) if validation else crud.set_triplet_label(db, triplet_id, label, user.uid)
     except ValueError as e:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND) from e
-    logging.info("Triplet %s labeled as %s.", triplet_id, label)
+    logging.info(
+        " Validation Triplet %s labeled as %s.", triplet_id, label
+    ) if validation else logging.info("Triplet %s labeled as %s.", triplet_id, label)
     return JSONResponse(
         content={"message": "Label set successfully."},
         status_code=status.HTTP_200_OK,
@@ -97,7 +124,7 @@ def download_db(user: AdminUserSession, db: Session = Depends(get_db)) -> FileRe
     stream = get_db_excel_export(db)
 
     now = time.strftime("%Y%m%d-%H%M")
-    filename = f"{now}_labelier_db.xlsx"
+    filename = f"{now}_labeliser_db.xlsx"
 
     logging.info("Database downloaded.")
     return Response(
@@ -124,56 +151,6 @@ async def upload_data_endpoint(
         content={"message": "Data uploaded successfully."},
         status_code=status.HTTP_201_CREATED,
     )
-
-
-def upload_data(file: UploadFile, db: Session = Depends(get_db)) -> None:
-    filename = file.filename
-    if not filename.endswith(".zip"):
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="The file should be a zip file.",
-        )
-
-    tmp_path = extract_zip(file)
-
-    uploaded_data_path = tmp_path / "data"
-    check_structure_consistency(
-        uploaded_data_path,
-        tmp_path,
-        "The zip file should contain a folder named 'data'.",
-    )
-
-    triplets_path = uploaded_data_path / "triplets.csv"
-    check_structure_consistency(
-        triplets_path,
-        tmp_path,
-        "The zip file should contain a csv file named 'triplets.csv'.",
-    )
-
-    # We need to load both the whole triplets (that contain all the data around triplets) and only the ids, that will be used to compare with the images
-    triplets, triplets_ids = load_triplets(triplets_path)
-
-    uploaded_images_path = uploaded_data_path / "images"
-    check_structure_consistency(
-        uploaded_images_path,
-        tmp_path,
-        "The data folder should contain a folder named 'images'.",
-    )
-    uploaded_images_ids = get_uploaded_images_ids(uploaded_images_path)
-    all_images_ids = get_all_images_ids(uploaded_images_ids)
-
-    # Check if for any triplet there will be a corresponding image
-    missing_images_names = triplets_ids - all_images_ids
-    if missing_images_names:
-        shutil.rmtree(uploaded_data_path)
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Missing images for these ids: {missing_images_names}.",
-        )
-
-    # If checks pass, add triplets to the database and move images
-    update_database(db, triplets, uploaded_images_path)
-    shutil.rmtree(tmp_path)
 
 
 @router.delete(
