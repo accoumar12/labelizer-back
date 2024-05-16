@@ -1,10 +1,7 @@
-<<<<<<< HEAD
-from __future__ import annotations
-
-=======
 import logging
 from math import log
->>>>>>> master
+from __future__ import annotations
+
 import shutil
 import time
 
