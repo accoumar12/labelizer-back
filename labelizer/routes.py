@@ -1,5 +1,10 @@
+<<<<<<< HEAD
 from __future__ import annotations
 
+=======
+import logging
+from math import log
+>>>>>>> master
 import shutil
 import time
 
@@ -11,6 +16,7 @@ from starlette.responses import FileResponse
 from labelizer import crud, schemas
 from labelizer.app_config import get_app_config
 from labelizer.core.api.auth.core import AdminUserSession, UserSession
+from labelizer.core.api.logging import setup_logging
 from labelizer.core.database.get_database import get_db
 from labelizer.types import SelectedItemType
 from labelizer.utils import (
@@ -27,6 +33,8 @@ router = APIRouter(tags=["Triplet Management"])
 
 app_config = get_app_config()
 
+setup_logging(level=logging.INFO)
+
 
 @router.get(
     "/images/{image_id}",
@@ -36,6 +44,7 @@ app_config = get_app_config()
 )
 async def get_image(image_id: str, canonical: bool = False) -> FileResponse:
     suffix = "_canonical" if canonical else ""
+    logging.info("Image %s%s retrieved.", image_id, suffix)
     return FileResponse(f"{app_config.images_path}/{image_id}{suffix}.stp.png")
 
 
@@ -54,6 +63,7 @@ def make_triplet(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="No unlabeled triplet found.",
         )
+    logging.info("Triplet %s retrieved.", triplet.id)
     return schemas.LabelizerTripletResponse(
         id=triplet.id,
         reference_id=triplet.reference_id,
@@ -80,6 +90,7 @@ def set_triplet_label(
         crud.set_triplet_label(db, triplet_id, label, user.uid)
     except ValueError as e:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND) from e
+    logging.info("Triplet %s labeled as %s.", triplet_id, label)
     return JSONResponse(
         content={"message": "Label set successfully."},
         status_code=status.HTTP_200_OK,
@@ -97,6 +108,7 @@ def download_db(user: AdminUserSession, db: Session = Depends(get_db)) -> FileRe
     now = time.strftime("%Y%m%d-%H%M")
     filename = f"{now}_labelier_db.xlsx"
 
+    logging.info("Database downloaded.")
     return Response(
         content=stream.getvalue(),
         headers={"Content-Disposition": f"attachment; filename={filename}"},
@@ -116,6 +128,7 @@ async def upload_data_endpoint(
 ) -> JSONResponse:
     upload_data(file, db)
 
+    logging.info("Data uploaded.")
     return JSONResponse(
         content={"message": "Data uploaded successfully."},
         status_code=status.HTTP_201_CREATED,
@@ -164,7 +177,7 @@ def upload_data(file: UploadFile, db: Session = Depends(get_db)) -> None:
         shutil.rmtree(uploaded_data_path)
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Missing images for these triplets ids: {missing_images_names}.",
+            detail=f"Missing images for these ids: {missing_images_names}.",
         )
 
     # If checks pass, add triplets to the database and move images
@@ -179,6 +192,7 @@ def upload_data(file: UploadFile, db: Session = Depends(get_db)) -> None:
 )
 def delete_db(user: AdminUserSession, db: Session = Depends(get_db)) -> JSONResponse:
     crud.delete_all_data(db)
+    logging.info("Database deleted.")
     return JSONResponse(
         content={"message": "Database deleted successfully."},
         status_code=status.HTTP_200_OK,
