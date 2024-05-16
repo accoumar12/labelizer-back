@@ -31,7 +31,11 @@ setup_logging(level=logging.INFO)
     summary="Retrieve an image by its id. Does not need the extension. If you need the canonical image, provide 'canonical=true' as a query parameter.",
     status_code=status.HTTP_200_OK,
 )
-async def get_image(image_id: str, canonical: bool = False) -> FileResponse:
+async def get_image(
+    user: UserSession,
+    image_id: str,
+    canonical: bool = False,
+) -> FileResponse:
     suffix = "_canonical" if canonical else ""
     logging.info("Image %s%s retrieved.", image_id, suffix)
     return FileResponse(f"{app_config.images_path}/{image_id}{suffix}.stp.png")
@@ -45,6 +49,7 @@ async def get_image(image_id: str, canonical: bool = False) -> FileResponse:
     | schemas.LabelizerValidationTripletResponse,
 )
 async def make_triplet(
+    user: UserSession,
     validation: bool = False,
     db: Session = Depends(get_db),
 ) -> schemas.LabelizerTripletResponse | schemas.LabelizerValidationTripletResponse:
@@ -107,7 +112,9 @@ async def set_triplet_label(
     except ValueError as e:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND) from e
     logging.info(
-        " Validation Triplet %s labeled as %s.", triplet_id, label
+        " Validation Triplet %s labeled as %s.",
+        triplet_id,
+        label,
     ) if validation else logging.info("Triplet %s labeled as %s.", triplet_id, label)
     return JSONResponse(
         content={"message": "Label set successfully."},
@@ -121,7 +128,8 @@ async def set_triplet_label(
     status_code=status.HTTP_200_OK,
 )
 async def download_db(
-    user: AdminUserSession, db: Session = Depends(get_db)
+    user: AdminUserSession,
+    db: Session = Depends(get_db),
 ) -> FileResponse:
     stream = get_db_excel_export(db)
 
@@ -161,7 +169,8 @@ async def upload_data_endpoint(
     status_code=status.HTTP_200_OK,
 )
 async def delete_db(
-    user: AdminUserSession, db: Session = Depends(get_db)
+    user: AdminUserSession,
+    db: Session = Depends(get_db),
 ) -> JSONResponse:
     crud.delete_all_data(db)
     logging.info("Database deleted.")
