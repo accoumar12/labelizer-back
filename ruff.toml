@@ -23,4 +23,6 @@ ignore = [
     "ANN102", # Check that cls has type annotation
     "FBT001", # Boolean in function definition
     "FBT002", # Default boolean in function definition
+    "TCH001", # Type checking block needed for first_party
+    "TCH002", # Type checking block needed for third-party
 ]

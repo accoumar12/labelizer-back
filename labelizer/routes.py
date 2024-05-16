@@ -44,7 +44,7 @@ async def get_image(image_id: str, canonical: bool = False) -> FileResponse:
     response_model=schemas.LabelizerTripletResponse
     | schemas.LabelizerValidationTripletResponse,
 )
-def make_triplet(
+async def make_triplet(
     validation: bool = False,
     db: Session = Depends(get_db),
 ) -> schemas.LabelizerTripletResponse | schemas.LabelizerValidationTripletResponse:
@@ -90,7 +90,7 @@ def make_triplet(
     summary="Set the label of a triplet according to the user's choice.",
     status_code=status.HTTP_200_OK,
 )
-def set_triplet_label(
+async def set_triplet_label(
     user: UserSession,
     triplet_id: str,
     label: SelectedItemType,
@@ -120,7 +120,9 @@ def set_triplet_label(
     summary="Download all the database in the csv format. Needs to be authorized as an admin user.",
     status_code=status.HTTP_200_OK,
 )
-def download_db(user: AdminUserSession, db: Session = Depends(get_db)) -> FileResponse:
+async def download_db(
+    user: AdminUserSession, db: Session = Depends(get_db)
+) -> FileResponse:
     stream = get_db_excel_export(db)
 
     now = time.strftime("%Y%m%d-%H%M")
@@ -158,7 +160,9 @@ async def upload_data_endpoint(
     summary="Delete all the data inside the database.",
     status_code=status.HTTP_200_OK,
 )
-def delete_db(user: AdminUserSession, db: Session = Depends(get_db)) -> JSONResponse:
+async def delete_db(
+    user: AdminUserSession, db: Session = Depends(get_db)
+) -> JSONResponse:
     crud.delete_all_data(db)
     logging.info("Database deleted.")
     return JSONResponse(
