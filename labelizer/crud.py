@@ -35,6 +35,14 @@ def get_first_unlabeled_triplet(db: Session) -> models.LabelizedTriplet:
     )
 
 
+def get_first_unlabeled_validation_triplet(db: Session) -> models.ValidationTriplet:
+    return (
+        db.query(models.ValidationTriplet)
+        .filter(models.ValidationTriplet.label.is_(None))
+        .first()
+    )
+
+
 def set_triplet_label(
     db: Session,
     triplet_id: int,

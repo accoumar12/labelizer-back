@@ -52,21 +52,40 @@ async def get_image(image_id: str, canonical: bool = False) -> FileResponse:
     response_model=schemas.LabelizerTripletResponse | schemas.ValidationTriplet,
 )
 def make_triplet(
+    validation: bool = False,
     db: Session = Depends(get_db),
 ) -> schemas.LabelizerTripletResponse | schemas.ValidationTriplet:
-    triplet = crud.get_first_unlabeled_triplet(db)
+    triplet = (
+        crud.get_first_unlabeled_validation_triplet(db)
+        if validation
+        else crud.get_first_unlabeled_triplet(db)
+    )
     if triplet is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="No unlabeled triplet found.",
         )
-    logging.info("Triplet %s retrieved.", triplet.id)
+    logging.info(
+        "Validation Triplet %s retrieved.",
+        triplet.id,
+    ) if validation else logging.info("Triplet %s retrieved.", triplet.id)
+    if validation:
+        return schemas.LabelizerValidationTripletResponse(
+            id=triplet.id,
+            reference_id=triplet.reference_id,
+            reference_length=triplet.reference_length,
+            left_id=triplet.left_id,
+            left_length=triplet.left_length,
+            left_encoder_id=triplet.left_encoder_id,
+            right_id=triplet.right_id,
+            right_encoder_id=triplet.right_encoder_id,
+        )
     return schemas.LabelizerTripletResponse(
         id=triplet.id,
         reference_id=triplet.reference_id,
         reference_length=triplet.reference_length,
         left_id=triplet.left_id,
-        left_length=triplet.reference_length,
+        left_length=triplet.left_length,
         right_id=triplet.right_id,
         right_length=triplet.right_length,
     )

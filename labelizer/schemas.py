@@ -20,6 +20,20 @@ class LabelizerTripletResponse(BaseModel):
         orm_mode = True
 
 
+class LabelizerValidationTripletResponse(BaseModel):
+    id: int
+    reference_id: str
+    reference_length: float
+    left_id: str
+    left_length: float
+    left_encoder_id: str
+    right_id: str
+    right_encoder_id: str
+
+    class Config:
+        orm_mode = True
+
+
 class LabelizedTriplet(BaseModel):
     reference_id: str
     reference_length: float
