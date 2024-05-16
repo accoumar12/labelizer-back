@@ -39,7 +39,7 @@ def load_triplets(triplets_path: Path) -> tuple[pd.DataFrame, set[str]]:
 def get_uploaded_images_ids(uploaded_images_path: Path) -> set[str]:
     uploaded_images = set(uploaded_images_path.iterdir())
     image_ids = {
-        file.name.split(".")[0]
+        file.name.split(".")[0].replace("_canonical", "")
         for file in uploaded_images
         if not file.name.endswith("_canonical")
     }
