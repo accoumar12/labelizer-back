@@ -90,6 +90,33 @@ async def make_triplet(
     )
 
 
+@router.get(
+    "/triplet/stats",
+    summary="Get the number of labeled and unlabeled triplets.",
+    status_code=status.HTTP_200_OK,
+    response_model=schemas.TripletStats,
+)
+async def get_triplet_stats(
+    user: UserSession,
+    validation: bool = False,
+    db: Session = Depends(get_db),
+) -> schemas.TripletStats:
+    labeled_count = (
+        crud.count_labeled_validation_triplets(db)
+        if validation
+        else crud.count_labeled_triplets(db)
+    )
+    unlabeled_count = (
+        crud.count_unlabeled_validation_triplets(db)
+        if validation
+        else crud.count_unlabeled_triplets(db)
+    )
+    return schemas.TripletStats(
+        labeled=labeled_count,
+        unlabeled=unlabeled_count,
+    )
+
+
 @router.post(
     "/triplet",
     summary="Set the label of a triplet according to the user's choice.",

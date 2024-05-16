@@ -59,6 +59,38 @@ def get_first_unlabeled_validation_triplet(db: Session) -> models.ValidationTrip
     )
 
 
+def count_labeled_triplets(db: Session) -> int:
+    return (
+        db.query(models.LabelizedTriplet)
+        .filter(models.LabelizedTriplet.label.isnot(None))
+        .count()
+    )
+
+
+def count_labeled_validation_triplets(db: Session) -> int:
+    return (
+        db.query(models.ValidationTriplet)
+        .filter(models.ValidationTriplet.label.isnot(None))
+        .count()
+    )
+
+
+def count_unlabeled_triplets(db: Session) -> int:
+    return (
+        db.query(models.LabelizedTriplet)
+        .filter(models.LabelizedTriplet.label.is_(None))
+        .count()
+    )
+
+
+def count_unlabeled_validation_triplets(db: Session) -> int:
+    return (
+        db.query(models.ValidationTriplet)
+        .filter(models.ValidationTriplet.label.is_(None))
+        .count()
+    )
+
+
 def set_triplet_label(
     db: Session,
     triplet_id: int,

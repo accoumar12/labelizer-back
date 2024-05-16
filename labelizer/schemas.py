@@ -66,3 +66,8 @@ class ValidationTriplet(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+class TripletStats(BaseModel):
+    labeled: int
+    unlabeled: int
