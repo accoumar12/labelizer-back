@@ -1,10 +1,6 @@
 import logging
-from contextlib import asynccontextmanager
-from typing import Callable
 
 from fastapi import FastAPI
-from fastapi.exceptions import ValidationException
-from starlette.exceptions import HTTPException
 
 from labelizer import APP_VERSION, models
 from labelizer.core.api.logging import setup_logging
@@ -18,10 +14,9 @@ API used to manage the labeling of triplets of images.
 
 ROOT_PATH = "/api/labelizer/v1"
 
+
 def setup_app() -> FastAPI:
-    """
-    Initialize fastapi app.
-    """
+    """Initialize fastapi app."""
     models.Base.metadata.create_all(bind=engine)
 
     _app = FastAPI(
@@ -41,7 +36,7 @@ def setup_app() -> FastAPI:
     setup_logging(logging.INFO)
 
     routers = [
-        label_router
+        label_router,
     ]
     for router in routers:
         _app.include_router(router, prefix=ROOT_PATH)

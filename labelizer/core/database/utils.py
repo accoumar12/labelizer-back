@@ -73,7 +73,7 @@ def extract_zip(file: UploadFile) -> Path:
     return tmp_path
 
 
-def upload_data(file: UploadFile, db: Session = Depends(get_db)) -> None:
+def upload_verified_data(file: UploadFile, db: Session = Depends(get_db)) -> None:
     filename = file.filename
     if not filename.endswith(".zip"):
         raise HTTPException(
@@ -125,6 +125,14 @@ def upload_data(file: UploadFile, db: Session = Depends(get_db)) -> None:
     # If checks pass, add triplets to the database and move images
     update_database(db, triplets, validation_triplets, uploaded_images_path)
     shutil.rmtree(tmp_path)
+
+
+def upload_data(file: UploadFile, db: Session = Depends(get_db)) -> None:
+    tmp_path = extract_zip(file)
+    triplets_path = tmp_path / "triplets.csv"
+    triplets, _ = load_triplets(triplets_path)
+    uploaded_images_path = tmp_path / "images"
+    update_database(db, triplets, triplets, uploaded_images_path)
 
 
 def check_match_triplets_images(
