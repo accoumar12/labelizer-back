@@ -16,9 +16,9 @@ from labelizer.core.database.get_database import get_db
 from labelizer.core.database.utils import (
     get_all_triplets_csv_stream,
     get_all_validation_triplets_csv_stream,
+    upload_data,
 )
 from labelizer.types import SelectedItemType
-from labelizer.utils import upload_data
 
 router = APIRouter(tags=["Triplet Management"])
 
