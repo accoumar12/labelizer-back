@@ -146,7 +146,7 @@ async def set_triplet_label(
 
 @router.post(
     "/upload_data",
-    summary="Upload new data, including images and triplets. The data has to be a zipped folder containing a csv file named triplets.csv and a folder named images containing the images. Needs to be authorized as an admin user.",
+    summary="Upload new data, including images and triplets. The data has to be a zipped folder containing a csv file named triplets, a csv file named validation_triplets and a folder named images containing the images. Needs to be authorized as an admin user. If you do not want to include triplets, you can provide a csv file with no line but still the header.",
     status_code=status.HTTP_201_CREATED,
 )
 async def upload_data_endpoint(
