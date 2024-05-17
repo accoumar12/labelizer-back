@@ -29,7 +29,7 @@ def update_database(
     crud.create_labelized_triplets(db, triplets)
     crud.create_validation_triplets(db, validation_triplets)
     uploaded_images = uploaded_images_path.iterdir()
+    app_config.images_path.mkdir(parents=True, exist_ok=True)
     for file in uploaded_images:
         destination = app_config.images_path / file.name
-        destination.parent.mkdir(parents=True, exist_ok=True)
         shutil.move(file, destination)
