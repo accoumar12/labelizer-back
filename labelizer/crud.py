@@ -129,8 +129,12 @@ def set_validation_triplet_label(
     db.commit()
 
 
-def get_all_data(db: Session) -> list[dict]:
+def get_all_triplets(db: Session) -> list[dict]:
     return [triplet.to_dict() for triplet in db.query(models.LabelizedTriplet).all()]
+
+
+def get_all_validation_triplets(db: Session) -> list[dict]:
+    return [triplet.to_dict() for triplet in db.query(models.ValidationTriplet).all()]
 
 
 def delete_all_data(db: Session) -> None:

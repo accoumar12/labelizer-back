@@ -11,11 +11,20 @@ from labelizer.app_config import AppConfig
 app_config = AppConfig()
 
 
-def get_db_excel_export(db: Session) -> io.BytesIO:
-    data = crud.get_all_data(db)
+def get_all_triplets_csv_stream(db: Session) -> io.BytesIO:
+    data = crud.get_all_triplets(db)
     data = pd.DataFrame(data)
     stream = io.BytesIO()
-    data.to_excel(stream, index=False)
+    data.to_csv(stream, index=False)
+    stream.seek(0)
+    return stream
+
+
+def get_all_validation_triplets_csv_stream(db: Session) -> io.BytesIO:
+    data = crud.get_all_validation_triplets(db)
+    data = pd.DataFrame(data)
+    stream = io.BytesIO()
+    data.to_csv(stream, index=False)
     stream.seek(0)
     return stream
 

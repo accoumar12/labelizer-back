@@ -14,7 +14,8 @@ from labelizer.core.api.auth.core import AdminUserSession, UserSession
 from labelizer.core.api.logging import setup_logging
 from labelizer.core.database.get_database import get_db
 from labelizer.core.database.utils import (
-    get_db_excel_export,
+    get_all_triplets_csv_stream,
+    get_all_validation_triplets_csv_stream,
 )
 from labelizer.types import SelectedItemType
 from labelizer.utils import upload_data
@@ -165,14 +166,19 @@ async def upload_data_endpoint(
 
 @router.get(
     "/download_db",
-    summary="Download all the database in the excel format. Needs to be authorized as an admin user.",
+    summary="Download the database in the csv format. Needs to be authorized as an admin user.",
     status_code=status.HTTP_200_OK,
 )
 async def download_db(
     user: AdminUserSession,
+    validation: bool = False,
     db: Session = Depends(get_db),
 ) -> FileResponse:
-    stream = get_db_excel_export(db)
+    stream = (
+        get_all_validation_triplets_csv_stream(db)
+        if validation
+        else get_all_triplets_csv_stream(db)
+    )
 
     now = time.strftime("%Y%m%d-%H%M")
     filename = f"{now}_labeliser_db.xlsx"
@@ -181,7 +187,7 @@ async def download_db(
     return Response(
         content=stream.getvalue(),
         headers={"Content-Disposition": f"attachment; filename={filename}"},
-        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        media_type="text/csv",
     )
 
 
