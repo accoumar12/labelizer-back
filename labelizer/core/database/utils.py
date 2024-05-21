@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import io
+import logging
 import shutil
 import tempfile
 import zipfile
@@ -16,6 +17,8 @@ from labelizer.core.database.get_database import get_db
 
 app_config = AppConfig()
 
+logger = logging.getLogger()
+
 
 def check_structure_consistency(
     path_to_be_present: Path,
@@ -29,7 +32,11 @@ def check_structure_consistency(
 
 def load_triplets(triplets_path: Path) -> pd.DataFrame:
     """Load triplets from a CSV file."""
-    return pd.read_csv(triplets_path)
+    try:
+        return pd.read_csv(triplets_path)
+    except Exception as e:  # noqa: BLE001
+        logger.info("Error loading triplets: %s", e)
+        return pd.DataFrame()
 
 
 def extract_triplet_ids(triplets: pd.DataFrame) -> set[str]:
@@ -122,9 +129,8 @@ def upload_verified_data(file: UploadFile, db: Session = Depends(get_db)) -> Non
         "The zip file should contain a csv file named 'validation_triplets.csv'.",
     )
 
-    validation_triplets, validation_triplets_ids = load_triplets(
-        validation_triplets_path,
-    )
+    validation_triplets = load_triplets(validation_triplets_path)
+    validation_triplets_ids = extract_triplet_ids(validation_triplets)
     check_match_triplets_images(validation_triplets_ids, all_images_ids)
 
     # If checks pass, add triplets to the database and move images
@@ -135,10 +141,16 @@ def upload_verified_data(file: UploadFile, db: Session = Depends(get_db)) -> Non
 def upload_data(file: UploadFile, db: Session = Depends(get_db)) -> None:
     tmp_path = extract_zip(file)
     uploaded_data_path = tmp_path / "data"
+
     triplets_path = uploaded_data_path / "triplets.csv"
     triplets = load_triplets(triplets_path)
-    uploaded_images_path = tmp_path / "images"
-    crud.update_database(db, triplets, triplets, uploaded_images_path)
+
+    validation_triplets_path = uploaded_data_path / "validation_triplets.csv"
+    validation_triplets = load_triplets(validation_triplets_path)
+
+    uploaded_images_path = uploaded_data_path / "images"
+
+    crud.update_database(db, triplets, validation_triplets, uploaded_images_path)
 
 
 def check_match_triplets_images(
