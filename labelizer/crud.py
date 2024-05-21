@@ -59,14 +59,14 @@ def get_first_unlabeled_triplet(
     cutoff_time = now_time - datetime.timedelta(
         seconds=timeout_seconds,
     )
+    # We retrieve the first triplet that is unlabeled and either has never been retrieved or has been retrieved before the cutoff time
     triplet = (
         db.query(models.LabelizedTriplet)
         .filter(
-            models.LabelizedTriplet.label.is_(None)
+            (models.LabelizedTriplet.label.is_(None))
             & (
-                models.LabelizedTriplet.retrieved_at.is_(None)
-                | models.LabelizedTriplet.retrieved_at
-                < cutoff_time
+                (models.LabelizedTriplet.retrieved_at.is_(None))
+                | (models.LabelizedTriplet.retrieved_at < cutoff_time)
             ),
         )
         .first()
@@ -88,11 +88,10 @@ def get_first_unlabeled_validation_triplet(
     triplet = (
         db.query(models.ValidationTriplet)
         .filter(
-            models.ValidationTriplet.label.is_(None)
+            (models.ValidationTriplet.label.is_(None))
             & (
-                models.ValidationTriplet.retrieved_at.is_(None)
-                | models.ValidationTriplet.retrieved_at
-                < cutoff_time
+                (models.ValidationTriplet.retrieved_at.is_(None))
+                | (models.ValidationTriplet.retrieved_at < cutoff_time)
             ),
         )
         .first()
