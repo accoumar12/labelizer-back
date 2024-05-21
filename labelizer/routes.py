@@ -15,7 +15,7 @@ from labelizer.core.database.get_database import get_db
 from labelizer.core.database.utils import (
     get_all_triplets_csv_stream,
     get_all_validation_triplets_csv_stream,
-    upload_data,
+    upload_verified_data,
 )
 from labelizer.types import SelectedItemType
 
@@ -154,7 +154,7 @@ async def upload_data_endpoint(
     file: UploadFile = File(...),
     db: Session = Depends(get_db),
 ) -> JSONResponse:
-    upload_data(file, db)
+    upload_verified_data(file, db)
 
     logger.info("Data uploaded.")
     return JSONResponse(
