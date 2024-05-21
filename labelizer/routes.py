@@ -180,7 +180,7 @@ async def download_db(
     )
 
     now = time.strftime("%Y%m%d-%H%M")
-    filename = f"{now}_labeliser_db.xlsx"
+    filename = f"{now}_labelizer_db.xlsx"
 
     logger.info("Database downloaded.")
     return Response(
