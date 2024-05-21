@@ -38,8 +38,8 @@ def test_create_labelized_triplets() -> None:
                 "right_id": "1",
                 "right_length": 1,
                 "encoder_id": "1",
-            }
-        ]
+            },
+        ],
     )
 
     with patch("labelizer.crud.create_labelized_triplet") as mock_create_triplet:

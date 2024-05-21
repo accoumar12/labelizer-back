@@ -78,6 +78,7 @@ async def make_triplet(
             right_id=triplet.right_id,
             right_length=triplet.right_length,
             right_encoder_id=triplet.right_encoder_id,
+            retrieved_at=triplet.retrieved_at,
         )
     return schemas.LabelizerTripletResponse(
         id=triplet.id,
@@ -87,6 +88,7 @@ async def make_triplet(
         left_length=triplet.left_length,
         right_id=triplet.right_id,
         right_length=triplet.right_length,
+        retrieved_at=triplet.retrieved_at,
     )
 
 

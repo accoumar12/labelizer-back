@@ -1,13 +1,10 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+import datetime  # noqa: TCH003
 
 from pydantic import BaseModel
 
 from labelizer.types import SelectedItemType
-
-if TYPE_CHECKING:
-    import datetime
 
 
 class TripletBase(BaseModel):

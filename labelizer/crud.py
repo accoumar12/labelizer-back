@@ -4,9 +4,6 @@ import datetime
 import shutil
 from typing import TYPE_CHECKING
 
-from pytz import timezone
-from sqlalchemy import func, or_
-
 from labelizer import models, schemas
 from labelizer.app_config import AppConfig
 
@@ -57,20 +54,25 @@ def get_first_unlabeled_triplet(
     db: Session,
     timeout_seconds: int = 30,
 ) -> models.LabelizedTriplet:
-    timeout = datetime.now(timezone.utc) - datetime.timedelta(minutes=timeout_seconds)
+    now_time = datetime.datetime.now(datetime.timezone.utc)
+    # We define the timeout as the current time minus the timeout_seconds, so the boundary, cutoff below which the triplet is considered as "unlocked", "stale"
+    cutoff_time = now_time - datetime.timedelta(
+        seconds=timeout_seconds,
+    )
     triplet = (
         db.query(models.LabelizedTriplet)
         .filter(
-            models.LabelizedTriplet.label.is_(None),
-            or_(
-                models.LabelizedTriplet.retrieved_at.is_(None),
-                models.LabelizedTriplet.retrieved_at < timeout,
+            models.LabelizedTriplet.label.is_(None)
+            & (
+                models.LabelizedTriplet.retrieved_at.is_(None)
+                | models.LabelizedTriplet.retrieved_at
+                < cutoff_time
             ),
         )
         .first()
     )
     if triplet:
-        triplet.retrieved_at = func.now()
+        triplet.retrieved_at = now_time
         db.commit()
     return triplet
 
@@ -79,20 +81,24 @@ def get_first_unlabeled_validation_triplet(
     db: Session,
     timeout_seconds: int = 30,
 ) -> models.ValidationTriplet:
-    timeout = datetime.now(timezone.utc) - datetime.timedelta(minutes=timeout_seconds)
+    now_time = datetime.datetime.now(datetime.timezone.utc)
+    cutoff_time = now_time - datetime.timedelta(
+        seconds=timeout_seconds,
+    )
     triplet = (
         db.query(models.ValidationTriplet)
         .filter(
-            models.ValidationTriplet.label.is_(None),
-            or_(
-                models.ValidationTriplet.retrieved_at.is_(None),
-                models.ValidationTriplet.retrieved_at < timeout,
+            models.ValidationTriplet.label.is_(None)
+            & (
+                models.ValidationTriplet.retrieved_at.is_(None)
+                | models.ValidationTriplet.retrieved_at
+                < cutoff_time
             ),
         )
         .first()
     )
     if triplet:
-        triplet.retrieved_at = func.now()
+        triplet.retrieved_at = now_time
         db.commit()
     return triplet
 
