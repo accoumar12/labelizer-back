@@ -1,8 +1,13 @@
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 from pydantic import BaseModel
 
 from labelizer.types import SelectedItemType
+
+if TYPE_CHECKING:
+    import datetime
 
 
 class TripletBase(BaseModel):
@@ -12,6 +17,7 @@ class TripletBase(BaseModel):
     left_length: float
     right_id: str
     right_length: float
+    retrieved_at: datetime.datetime | None = None
 
     class Config:
         from_attributes = True

@@ -1,7 +1,11 @@
 from __future__ import annotations
 
+import datetime
 import shutil
 from typing import TYPE_CHECKING
+
+from pytz import timezone
+from sqlalchemy import func, or_
 
 from labelizer import models, schemas
 from labelizer.app_config import AppConfig
@@ -49,20 +53,48 @@ def create_validation_triplets(db: Session, triplets: pd.DataFrame) -> None:
         create_validation_triplet(db, schemas.ValidationTriplet(**triplet.to_dict()))
 
 
-def get_first_unlabeled_triplet(db: Session) -> models.LabelizedTriplet:
-    return (
+def get_first_unlabeled_triplet(
+    db: Session,
+    timeout_seconds: int = 30,
+) -> models.LabelizedTriplet:
+    timeout = datetime.now(timezone.utc) - datetime.timedelta(minutes=timeout_seconds)
+    triplet = (
         db.query(models.LabelizedTriplet)
-        .filter(models.LabelizedTriplet.label.is_(None))
+        .filter(
+            models.LabelizedTriplet.label.is_(None),
+            or_(
+                models.LabelizedTriplet.retrieved_at.is_(None),
+                models.LabelizedTriplet.retrieved_at < timeout,
+            ),
+        )
         .first()
     )
+    if triplet:
+        triplet.retrieved_at = func.now()
+        db.commit()
+    return triplet
 
 
-def get_first_unlabeled_validation_triplet(db: Session) -> models.ValidationTriplet:
-    return (
+def get_first_unlabeled_validation_triplet(
+    db: Session,
+    timeout_seconds: int = 30,
+) -> models.ValidationTriplet:
+    timeout = datetime.now(timezone.utc) - datetime.timedelta(minutes=timeout_seconds)
+    triplet = (
         db.query(models.ValidationTriplet)
-        .filter(models.ValidationTriplet.label.is_(None))
+        .filter(
+            models.ValidationTriplet.label.is_(None),
+            or_(
+                models.ValidationTriplet.retrieved_at.is_(None),
+                models.ValidationTriplet.retrieved_at < timeout,
+            ),
+        )
         .first()
     )
+    if triplet:
+        triplet.retrieved_at = func.now()
+        db.commit()
+    return triplet
 
 
 def count_labeled_triplets(db: Session) -> int:
