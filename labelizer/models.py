@@ -18,6 +18,7 @@ class TripletBase(Base):
     label = Column(Enum(SelectedItemType), index=True)
     user_id = Column(String, index=True)
 
+    # This method is used to convert the object to a dictionary, useful for retrieving the csv when we download the database
     def to_dict(self) -> dict:
         return {c.key: getattr(self, c.key) for c in self.__table__.columns}
 
