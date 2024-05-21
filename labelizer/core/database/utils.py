@@ -128,7 +128,7 @@ def upload_verified_data(file: UploadFile, db: Session = Depends(get_db)) -> Non
     check_match_triplets_images(validation_triplets_ids, all_images_ids)
 
     # If checks pass, add triplets to the database and move images
-    update_database(db, triplets, validation_triplets, uploaded_images_path)
+    crud.update_database(db, triplets, validation_triplets, uploaded_images_path)
     shutil.rmtree(tmp_path)
 
 
@@ -138,7 +138,7 @@ def upload_data(file: UploadFile, db: Session = Depends(get_db)) -> None:
     triplets_path = uploaded_data_path / "triplets.csv"
     triplets = load_triplets(triplets_path)
     uploaded_images_path = tmp_path / "images"
-    update_database(db, triplets, triplets, uploaded_images_path)
+    crud.update_database(db, triplets, triplets, uploaded_images_path)
 
 
 def check_match_triplets_images(
@@ -169,18 +169,3 @@ def get_all_validation_triplets_csv_stream(db: Session) -> io.BytesIO:
     data.to_csv(stream, index=False)
     stream.seek(0)
     return stream
-
-
-def update_database(
-    db: Session,
-    triplets: pd.DataFrame,
-    validation_triplets: pd.DataFrame,
-    uploaded_images_path: Path,
-) -> None:
-    crud.create_labelized_triplets(db, triplets)
-    crud.create_validation_triplets(db, validation_triplets)
-    uploaded_images = uploaded_images_path.iterdir()
-    app_config.images_path.mkdir(parents=True, exist_ok=True)
-    for file in uploaded_images:
-        destination = app_config.images_path / file.name
-        shutil.move(file, destination)

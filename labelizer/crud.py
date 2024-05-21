@@ -1,14 +1,20 @@
 from __future__ import annotations
 
+import shutil
 from typing import TYPE_CHECKING
 
 from labelizer import models, schemas
+from labelizer.app_config import AppConfig
 
 if TYPE_CHECKING:
+    from pathlib import Path
+
     import pandas as pd
     from sqlalchemy.orm import Session
 
     from labelizer.crud import SelectedItemType
+
+app_config = AppConfig()
 
 
 def create_labelized_triplet(
@@ -140,3 +146,18 @@ def get_all_validation_triplets(db: Session) -> list[dict]:
 def delete_all_data(db: Session) -> None:
     db.query(models.LabelizedTriplet).delete()
     db.commit()
+
+
+def update_database(
+    db: Session,
+    triplets: pd.DataFrame,
+    validation_triplets: pd.DataFrame,
+    uploaded_images_path: Path,
+) -> None:
+    create_labelized_triplets(db, triplets)
+    create_validation_triplets(db, validation_triplets)
+    uploaded_images = uploaded_images_path.iterdir()
+    app_config.images_path.mkdir(parents=True, exist_ok=True)
+    for file in uploaded_images:
+        destination = app_config.images_path / file.name
+        shutil.move(file, destination)
