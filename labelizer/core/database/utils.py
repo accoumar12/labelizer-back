@@ -34,8 +34,8 @@ def load_triplets(triplets_path: Path) -> pd.DataFrame:
     """Load triplets from a CSV file."""
     try:
         return pd.read_csv(triplets_path)
-    except Exception as e:  # noqa: BLE001
-        logger.info("Error loading triplets: %s", e)
+    except FileNotFoundError as e:
+        logger.info("File not found: %s", e)
         return pd.DataFrame()
 
 
