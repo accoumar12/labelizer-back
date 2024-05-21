@@ -29,13 +29,14 @@ def check_structure_consistency(
 
 def load_triplets(triplets_path: Path) -> pd.DataFrame:
     """Load triplets from a CSV file."""
-    triplets = pd.read_csv(triplets_path)
-    return triplets
+    return pd.read_csv(triplets_path)
+
 
 def extract_triplet_ids(triplets: pd.DataFrame) -> set[str]:
     """Extract a set of triplet IDs from a DataFrame."""
-    triplets_ids = set(triplets[["reference_id", "left_id", "right_id"]].to_numpy().flatten())
-    return triplets_ids
+    return set(
+        triplets[["reference_id", "left_id", "right_id"]].to_numpy().flatten(),
+    )
 
 
 def get_uploaded_images_ids(uploaded_images_path: Path) -> set[str]:
@@ -133,7 +134,8 @@ def upload_verified_data(file: UploadFile, db: Session = Depends(get_db)) -> Non
 
 def upload_data(file: UploadFile, db: Session = Depends(get_db)) -> None:
     tmp_path = extract_zip(file)
-    triplets_path = tmp_path / "triplets.csv"
+    uploaded_data_path = tmp_path / "data"
+    triplets_path = uploaded_data_path / "triplets.csv"
     triplets = load_triplets(triplets_path)
     uploaded_images_path = tmp_path / "images"
     update_database(db, triplets, triplets, uploaded_images_path)
