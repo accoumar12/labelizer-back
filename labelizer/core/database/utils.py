@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import io
+import logging
 import shutil
 import tempfile
 import zipfile
@@ -16,6 +17,8 @@ from labelizer.core.database.get_database import get_db
 
 app_config = AppConfig()
 
+logger = logging.getLogger()
+
 
 def check_structure_consistency(
     path_to_be_present: Path,
@@ -27,12 +30,20 @@ def check_structure_consistency(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=detail)
 
 
-def load_triplets(triplets_path: Path) -> tuple[pd.DataFrame, set[str]]:
-    triplets = pd.read_csv(triplets_path)
-    triplets_ids = (
-        triplets[["reference_id", "left_id", "right_id"]].to_numpy().flatten()
+def load_triplets(triplets_path: Path) -> pd.DataFrame:
+    """Load triplets from a CSV file."""
+    try:
+        return pd.read_csv(triplets_path)
+    except FileNotFoundError as e:
+        logger.info("File not found: %s", e)
+        return pd.DataFrame()
+
+
+def extract_triplet_ids(triplets: pd.DataFrame) -> set[str]:
+    """Extract a set of triplet IDs from a DataFrame."""
+    return set(
+        triplets[["reference_id", "left_id", "right_id"]].to_numpy().flatten(),
     )
-    return triplets, set(triplets_ids)
 
 
 def get_uploaded_images_ids(uploaded_images_path: Path) -> set[str]:
@@ -73,7 +84,7 @@ def extract_zip(file: UploadFile) -> Path:
     return tmp_path
 
 
-def upload_data(file: UploadFile, db: Session = Depends(get_db)) -> None:
+def upload_verified_data(file: UploadFile, db: Session = Depends(get_db)) -> None:
     filename = file.filename
     if not filename.endswith(".zip"):
         raise HTTPException(
@@ -107,7 +118,8 @@ def upload_data(file: UploadFile, db: Session = Depends(get_db)) -> None:
     )
 
     # We need to load both the whole triplets (that contain all the data around triplets) and only the ids, that will be used to compare with the images
-    triplets, triplets_ids = load_triplets(triplets_path)
+    triplets = load_triplets(triplets_path)
+    triplets_ids = extract_triplet_ids(triplets)
     check_match_triplets_images(triplets_ids, all_images_ids)
 
     validation_triplets_path = uploaded_data_path / "validation_triplets.csv"
@@ -117,14 +129,28 @@ def upload_data(file: UploadFile, db: Session = Depends(get_db)) -> None:
         "The zip file should contain a csv file named 'validation_triplets.csv'.",
     )
 
-    validation_triplets, validation_triplets_ids = load_triplets(
-        validation_triplets_path,
-    )
+    validation_triplets = load_triplets(validation_triplets_path)
+    validation_triplets_ids = extract_triplet_ids(validation_triplets)
     check_match_triplets_images(validation_triplets_ids, all_images_ids)
 
     # If checks pass, add triplets to the database and move images
-    update_database(db, triplets, validation_triplets, uploaded_images_path)
+    crud.update_database(db, triplets, validation_triplets, uploaded_images_path)
     shutil.rmtree(tmp_path)
+
+
+def upload_data(file: UploadFile, db: Session = Depends(get_db)) -> None:
+    tmp_path = extract_zip(file)
+    uploaded_data_path = tmp_path / "data"
+
+    triplets_path = uploaded_data_path / "triplets.csv"
+    triplets = load_triplets(triplets_path)
+
+    validation_triplets_path = uploaded_data_path / "validation_triplets.csv"
+    validation_triplets = load_triplets(validation_triplets_path)
+
+    uploaded_images_path = uploaded_data_path / "images"
+
+    crud.update_database(db, triplets, validation_triplets, uploaded_images_path)
 
 
 def check_match_triplets_images(
@@ -155,18 +181,3 @@ def get_all_validation_triplets_csv_stream(db: Session) -> io.BytesIO:
     data.to_csv(stream, index=False)
     stream.seek(0)
     return stream
-
-
-def update_database(
-    db: Session,
-    triplets: pd.DataFrame,
-    validation_triplets: pd.DataFrame,
-    uploaded_images_path: Path,
-) -> None:
-    crud.create_labelized_triplets(db, triplets)
-    crud.create_validation_triplets(db, validation_triplets)
-    uploaded_images = uploaded_images_path.iterdir()
-    app_config.images_path.mkdir(parents=True, exist_ok=True)
-    for file in uploaded_images:
-        destination = app_config.images_path / file.name
-        shutil.move(file, destination)

@@ -11,7 +11,6 @@ from starlette.responses import FileResponse
 from labelizer import crud, schemas
 from labelizer.app_config import AppConfig
 from labelizer.core.api.auth.core import AdminUserSession, UserSession
-from labelizer.core.api.logging import setup_logging
 from labelizer.core.database.get_database import get_db
 from labelizer.core.database.utils import (
     get_all_triplets_csv_stream,
@@ -24,7 +23,7 @@ router = APIRouter(tags=["Triplet Management"])
 
 app_config = AppConfig()
 
-setup_logging(level=logging.INFO)
+logger = logging.getLogger()
 
 
 @router.get(
@@ -38,7 +37,7 @@ async def get_image(
     canonical: bool = False,
 ) -> FileResponse:
     suffix = "_canonical" if canonical else ""
-    logging.info("Image %s%s retrieved.", image_id, suffix)
+    logger.info("Image %s%s retrieved.", image_id, suffix)
     return FileResponse(f"{app_config.images_path}/{image_id}{suffix}.stp.png")
 
 
@@ -64,10 +63,10 @@ async def make_triplet(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="No unlabeled triplet found.",
         )
-    logging.info(
+    logger.info(
         "Validation Triplet %s retrieved.",
         triplet.id,
-    ) if validation else logging.info("Triplet %s retrieved.", triplet.id)
+    ) if validation else logger.info("Triplet %s retrieved.", triplet.id)
     if validation:
         return schemas.LabelizerValidationTripletResponse(
             id=triplet.id,
@@ -134,11 +133,11 @@ async def set_triplet_label(
         ) if validation else crud.set_triplet_label(db, triplet_id, label, user.uid)
     except ValueError as e:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND) from e
-    logging.info(
+    logger.info(
         " Validation Triplet %s labeled as %s.",
         triplet_id,
         label,
-    ) if validation else logging.info("Triplet %s labeled as %s.", triplet_id, label)
+    ) if validation else logger.info("Triplet %s labeled as %s.", triplet_id, label)
     return JSONResponse(
         content={"message": "Label set successfully."},
         status_code=status.HTTP_200_OK,
@@ -157,7 +156,7 @@ async def upload_data_endpoint(
 ) -> JSONResponse:
     upload_data(file, db)
 
-    logging.info("Data uploaded.")
+    logger.info("Data uploaded.")
     return JSONResponse(
         content={"message": "Data uploaded successfully."},
         status_code=status.HTTP_201_CREATED,
@@ -181,9 +180,9 @@ async def download_db(
     )
 
     now = time.strftime("%Y%m%d-%H%M")
-    filename = f"{now}_labeliser_db.xlsx"
+    filename = f"{now}_labelizer_db.xlsx"
 
-    logging.info("Database downloaded.")
+    logger.info("Database downloaded.")
     return Response(
         content=stream.getvalue(),
         headers={"Content-Disposition": f"attachment; filename={filename}"},
@@ -201,7 +200,7 @@ async def delete_db(
     db: Session = Depends(get_db),
 ) -> JSONResponse:
     crud.delete_all_data(db)
-    logging.info("Database deleted.")
+    logger.info("Database deleted.")
     return JSONResponse(
         content={"message": "Database deleted successfully."},
         status_code=status.HTTP_200_OK,
