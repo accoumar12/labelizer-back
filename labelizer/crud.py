@@ -52,12 +52,12 @@ def create_validation_triplets(db: Session, triplets: pd.DataFrame) -> None:
 
 def get_first_unlabeled_triplet(
     db: Session,
-    timeout_seconds: int = 30,
+    lock_timeout_seconds: int = app_config.lock_timeout_seconds,
 ) -> models.LabelizedTriplet:
     now_time = datetime.datetime.now(datetime.timezone.utc)
-    # We define the timeout as the current time minus the timeout_seconds, so the boundary, cutoff below which the triplet is considered as "unlocked", "stale"
+    # We define the timeout as the current time minus the lock_timeout_seconds, so the boundary, cutoff below which the triplet is considered as "unlocked", "stale"
     cutoff_time = now_time - datetime.timedelta(
-        seconds=timeout_seconds,
+        seconds=lock_timeout_seconds,
     )
     # We retrieve the first triplet that is unlabeled and either has never been retrieved or has been retrieved before the cutoff time
     triplet = (
@@ -79,11 +79,11 @@ def get_first_unlabeled_triplet(
 
 def get_first_unlabeled_validation_triplet(
     db: Session,
-    timeout_seconds: int = 30,
+    lock_timeout_seconds: int = app_config.lock_timeout_seconds,
 ) -> models.ValidationTriplet:
     now_time = datetime.datetime.now(datetime.timezone.utc)
     cutoff_time = now_time - datetime.timedelta(
-        seconds=timeout_seconds,
+        seconds=lock_timeout_seconds,
     )
     triplet = (
         db.query(models.ValidationTriplet)
