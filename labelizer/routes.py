@@ -59,6 +59,7 @@ async def make_triplet(
         else crud.get_first_unlabeled_triplet(db)
     )
     if triplet is None:
+        logger.info("No unlabeled triplet found.")
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="No unlabeled triplet found.",
