@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import datetime
 import shutil
 from typing import TYPE_CHECKING
 
@@ -49,20 +50,56 @@ def create_validation_triplets(db: Session, triplets: pd.DataFrame) -> None:
         create_validation_triplet(db, schemas.ValidationTriplet(**triplet.to_dict()))
 
 
-def get_first_unlabeled_triplet(db: Session) -> models.LabelizedTriplet:
-    return (
+def get_first_unlabeled_triplet(
+    db: Session,
+    lock_timeout_seconds: int = app_config.lock_timeout_seconds,
+) -> models.LabelizedTriplet:
+    now_time = datetime.datetime.now(datetime.timezone.utc)
+    # We define the timeout as the current time minus the lock_timeout_seconds, so the boundary, cutoff below which the triplet is considered as "unlocked", "stale"
+    cutoff_time = now_time - datetime.timedelta(
+        seconds=lock_timeout_seconds,
+    )
+    # We retrieve the first triplet that is unlabeled and either has never been retrieved or has been retrieved before the cutoff time
+    triplet = (
         db.query(models.LabelizedTriplet)
-        .filter(models.LabelizedTriplet.label.is_(None))
+        .filter(
+            (models.LabelizedTriplet.label.is_(None))
+            & (
+                (models.LabelizedTriplet.retrieved_at.is_(None))
+                | (models.LabelizedTriplet.retrieved_at < cutoff_time)
+            ),
+        )
         .first()
     )
+    if triplet:
+        triplet.retrieved_at = now_time
+        db.commit()
+    return triplet
 
 
-def get_first_unlabeled_validation_triplet(db: Session) -> models.ValidationTriplet:
-    return (
+def get_first_unlabeled_validation_triplet(
+    db: Session,
+    lock_timeout_seconds: int = app_config.lock_timeout_seconds,
+) -> models.ValidationTriplet:
+    now_time = datetime.datetime.now(datetime.timezone.utc)
+    cutoff_time = now_time - datetime.timedelta(
+        seconds=lock_timeout_seconds,
+    )
+    triplet = (
         db.query(models.ValidationTriplet)
-        .filter(models.ValidationTriplet.label.is_(None))
+        .filter(
+            (models.ValidationTriplet.label.is_(None))
+            & (
+                (models.ValidationTriplet.retrieved_at.is_(None))
+                | (models.ValidationTriplet.retrieved_at < cutoff_time)
+            ),
+        )
         .first()
     )
+    if triplet:
+        triplet.retrieved_at = now_time
+        db.commit()
+    return triplet
 
 
 def count_labeled_triplets(db: Session) -> int:
@@ -143,8 +180,13 @@ def get_all_validation_triplets(db: Session) -> list[dict]:
     return [triplet.to_dict() for triplet in db.query(models.ValidationTriplet).all()]
 
 
-def delete_all_data(db: Session) -> None:
+def delete_all_triplets(db: Session) -> None:
     db.query(models.LabelizedTriplet).delete()
+    db.commit()
+
+
+def delete_all_validation_triplets(db: Session) -> None:
+    db.query(models.ValidationTriplet).delete()
     db.commit()
 
 

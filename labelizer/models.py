@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Enum, Float, Integer, String
+from sqlalchemy import Column, DateTime, Enum, Float, Integer, String
 
 from labelizer.core.database.init_database import Base
 from labelizer.types import SelectedItemType
@@ -17,6 +17,8 @@ class TripletBase(Base):
     right_length = Column(Float, index=True)
     label = Column(Enum(SelectedItemType), index=True)
     user_id = Column(String, index=True)
+    # We add a "retrieved_at" column to manage the locking of the triplets, so two users will not deal with the same triplet
+    retrieved_at = Column(DateTime(timezone=True), index=True)
 
     # This method is used to convert the object to a dictionary, useful for retrieving the csv when we download the database
     def to_dict(self) -> dict:

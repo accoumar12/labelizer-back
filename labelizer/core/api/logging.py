@@ -18,7 +18,7 @@ def setup_logging(level: int) -> None:
     syslog.addFilter(AppFilter())
 
     formatter = logging.Formatter(
-        "[%(asctime)s|%(process)d|%(request_id).8s..] %(levelname)8s: %(message)s"
+        "[%(asctime)s|%(process)d|%(request_id).8s..] %(levelname)8s: %(message)s",
     )
 
     syslog.setFormatter(formatter)

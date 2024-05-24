@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import datetime  # noqa: TCH003
+
 from pydantic import BaseModel
 
 from labelizer.types import SelectedItemType
@@ -31,6 +33,7 @@ class LabelizedTriplet(TripletBase):
     encoder_id: str
     label: SelectedItemType | None = None
     user_id: str | None = None
+    retrieved_at: datetime.datetime | None = None
 
 
 class ValidationTriplet(TripletBase):
@@ -38,6 +41,7 @@ class ValidationTriplet(TripletBase):
     right_encoder_id: str
     label: SelectedItemType | None = None
     user_id: str | None = None
+    retrieved_at: datetime.datetime | None = None
 
 
 class TripletStats(BaseModel):
