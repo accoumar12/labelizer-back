@@ -180,8 +180,13 @@ def get_all_validation_triplets(db: Session) -> list[dict]:
     return [triplet.to_dict() for triplet in db.query(models.ValidationTriplet).all()]
 
 
-def delete_all_data(db: Session) -> None:
+def delete_all_triplets(db: Session) -> None:
     db.query(models.LabelizedTriplet).delete()
+    db.commit()
+
+
+def delete_all_validation_triplets(db: Session) -> None:
+    db.query(models.ValidationTriplet).delete()
     db.commit()
 
 

@@ -53,22 +53,19 @@ async def make_triplet(
     validation: bool = False,
     db: Session = Depends(get_db),
 ) -> schemas.LabelizerTripletResponse | schemas.LabelizerValidationTripletResponse:
-    triplet = (
-        crud.get_first_unlabeled_validation_triplet(db)
-        if validation
-        else crud.get_first_unlabeled_triplet(db)
-    )
+    if validation:
+        triplet = crud.get_first_unlabeled_validation_triplet(db)
+    else:
+        triplet = crud.get_first_unlabeled_triplet(db)
+
     if triplet is None:
         logger.info("No unlabeled triplet found.")
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="No unlabeled triplet found.",
         )
-    logger.info(
-        "Validation Triplet %s retrieved.",
-        triplet.id,
-    ) if validation else logger.info("Triplet %s retrieved.", triplet.id)
     if validation:
+        logger.info("Validation Triplet %s retrieved.", triplet.id)
         return schemas.LabelizerValidationTripletResponse(
             id=triplet.id,
             reference_id=triplet.reference_id,
@@ -80,6 +77,7 @@ async def make_triplet(
             right_length=triplet.right_length,
             right_encoder_id=triplet.right_encoder_id,
         )
+    logger.info("Triplet %s retrieved.", triplet.id)
     return schemas.LabelizerTripletResponse(
         id=triplet.id,
         reference_id=triplet.reference_id,
@@ -134,11 +132,11 @@ async def set_triplet_label(
         ) if validation else crud.set_triplet_label(db, triplet_id, label, user.uid)
     except ValueError as e:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND) from e
-    logger.info(
-        " Validation Triplet %s labeled as %s.",
-        triplet_id,
-        label,
-    ) if validation else logger.info("Triplet %s labeled as %s.", triplet_id, label)
+
+    if validation:
+        logger.info("Validation Triplet %s labeled as %s.", triplet_id, label)
+    else:
+        logger.info("Triplet %s labeled as %s.", triplet_id, label)
     return JSONResponse(
         content={"message": "Label set successfully."},
         status_code=status.HTTP_200_OK,
@@ -174,16 +172,15 @@ async def download_db(
     validation: bool = False,
     db: Session = Depends(get_db),
 ) -> FileResponse:
-    stream = (
-        get_all_validation_triplets_csv_stream(db)
-        if validation
-        else get_all_triplets_csv_stream(db)
-    )
-
     now = time.strftime("%Y%m%d-%H%M")
-    filename = f"{now}_labelizer_db.xlsx"
-
-    logger.info("Database downloaded.")
+    if validation:
+        stream = get_all_validation_triplets_csv_stream(db)
+        filename = f"{now}_labelizer_validation_db.xlsx"
+        logger.info("Validation database downloaded.")
+    else:
+        stream = get_all_triplets_csv_stream(db)
+        filename = f"{now}_labelizer_db.xlsx"
+        logger.info("Database downloaded.")
     return Response(
         content=stream.getvalue(),
         headers={"Content-Disposition": f"attachment; filename={filename}"},
@@ -198,10 +195,18 @@ async def download_db(
 )
 async def delete_db(
     user: AdminUserSession,
+    validation: bool = False,
     db: Session = Depends(get_db),
 ) -> JSONResponse:
-    crud.delete_all_data(db)
-    logger.info("Database deleted.")
+    crud.delete_all_validation_triplets(db) if validation else crud.delete_all_triplets(
+        db,
+    )
+    if validation:
+        crud.delete_all_validation_triplets(db)
+        logger.info("Validation database deleted.")
+    else:
+        crud.delete_all_triplets(db)
+        logger.info("Database deleted.")
     return JSONResponse(
         content={"message": "Database deleted successfully."},
         status_code=status.HTTP_200_OK,
