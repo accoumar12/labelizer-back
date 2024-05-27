@@ -164,7 +164,7 @@ async def upload_data_endpoint(
 
 @router.get(
     "/download_db",
-    summary="Download the database in the csv format. Needs to be authorized as an admin user.",
+    summary="Download the database in the csv format.",
     status_code=status.HTTP_200_OK,
 )
 async def download_db(
