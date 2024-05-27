@@ -175,11 +175,11 @@ async def download_db(
     now = time.strftime("%Y%m%d-%H%M")
     if validation:
         stream = get_all_validation_triplets_csv_stream(db)
-        filename = f"{now}_labelizer_validation_db.xlsx"
+        filename = f"{now}_labelizer_validation_db.csv"
         logger.info("Validation database downloaded.")
     else:
         stream = get_all_triplets_csv_stream(db)
-        filename = f"{now}_labelizer_db.xlsx"
+        filename = f"{now}_labelizer_db.csv"
         logger.info("Database downloaded.")
     return Response(
         content=stream.getvalue(),
