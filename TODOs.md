@@ -1,7 +1,10 @@
 ## Back
-- éviter l overwrite
+- gestion base de données avec alembic
 
 ## Front
-- rajouter les noms des modèles en dessous des images
-- rajouter message addition base de données
-- labeling pas labelling
+- Timeout de 30s pour cohérence avec le backend
+- nom du fichier telechargé avec le filename et pas download
+
+## Misc
+- gestion des droits pour déployer
+- gestion du login
