@@ -1,5 +1,4 @@
 ## Back
-- gestion base de données avec alembic
 
 ## Front
 - Timeout de 30s pour cohérence avec le backend
