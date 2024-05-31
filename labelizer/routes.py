@@ -143,6 +143,7 @@ async def set_triplet_label(
     )
 
 
+# We choose to upload both the triplets and validation triplets at once and not separately because we can easily define a format for the zipped folder
 @router.post(
     "/upload_data",
     summary="Upload new data, including images and triplets. The data has to be a zipped folder containing a csv file named triplets, a csv file named validation_triplets and a folder named images containing the images. Needs to be authorized as an admin user. If you do not want to include triplets, you can provide a csv file with no line but still the header.",
