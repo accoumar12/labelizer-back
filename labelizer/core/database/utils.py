@@ -139,6 +139,7 @@ def upload_verified_data(file: UploadFile, db: Session = Depends(get_db)) -> Non
 
 
 def upload_data(file: UploadFile, db: Session = Depends(get_db)) -> None:
+    logger.debug("Uploading data ...")
     tmp_path = extract_zip(file)
     uploaded_data_path = tmp_path / "data"
 

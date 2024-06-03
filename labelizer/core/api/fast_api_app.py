@@ -33,7 +33,7 @@ def setup_app() -> FastAPI:
 
     _app.add_middleware(RequestContextLogMiddleware)
 
-    setup_logging(logging.INFO)
+    setup_logging(logging.DEBUG)
 
     routers = [
         label_router,

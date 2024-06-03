@@ -3,7 +3,15 @@ from __future__ import annotations
 import logging
 import time
 
-from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
+from fastapi import (
+    APIRouter,
+    BackgroundTasks,
+    Depends,
+    File,
+    HTTPException,
+    UploadFile,
+    status,
+)
 from fastapi.responses import JSONResponse, Response
 from sqlalchemy.orm import Session
 from starlette.responses import FileResponse
@@ -149,17 +157,17 @@ async def set_triplet_label(
     summary="Upload new data, including images and triplets. The data has to be a zipped folder containing a csv file named triplets, a csv file named validation_triplets and a folder named images containing the images. Needs to be authorized as an admin user. If you do not want to include triplets, you can provide a csv file with no line but still the header.",
     status_code=status.HTTP_201_CREATED,
 )
-async def upload_data_endpoint(
+async def upload_data_in_the_background(
     user: AdminUserSession,
+    background_tasks: BackgroundTasks,
     file: UploadFile = File(...),
     db: Session = Depends(get_db),
 ) -> JSONResponse:
-    upload_data(file, db)
-
-    logger.info("Data uploaded.")
+    background_tasks.add_task(upload_data, file, db)
+    logger.info("Data upload starts in the background.")
     return JSONResponse(
-        content={"message": "Data uploaded successfully."},
-        status_code=status.HTTP_201_CREATED,
+        content={"message": "Data upload starts in the background."},
+        status_code=status.HTTP_202_ACCEPTED,
     )
 
 

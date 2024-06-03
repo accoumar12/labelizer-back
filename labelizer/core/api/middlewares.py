@@ -6,7 +6,11 @@ from uuid import uuid4
 from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
 from starlette.requests import Request
 
-from labelizer.core.api.request_id_var import set_request_id, get_request_id, reset_request_id
+from labelizer.core.api.request_id_var import (
+    get_request_id,
+    reset_request_id,
+    set_request_id,
+)
 
 logger = logging.getLogger(__name__)
 
