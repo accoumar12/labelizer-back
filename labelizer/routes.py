@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import io
 import logging
 import time
 
@@ -163,7 +164,12 @@ async def upload_data_in_the_background(
     file: UploadFile = File(...),
     db: Session = Depends(get_db),
 ) -> JSONResponse:
-    background_tasks.add_task(upload_data, file, db)
+    # Read the file into memory
+    file_in_memory = io.BytesIO(await file.read())
+
+    # Add the task to the background with the file in memory
+    background_tasks.add_task(upload_data, file_in_memory, db)
+
     logger.info("Data upload starts in the background.")
     return JSONResponse(
         content={"message": "Data upload starts in the background."},

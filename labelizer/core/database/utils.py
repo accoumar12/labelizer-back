@@ -8,7 +8,7 @@ import zipfile
 from pathlib import Path
 
 import pandas as pd
-from fastapi import Depends, HTTPException, UploadFile, status
+from fastapi import Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from labelizer import crud
@@ -77,22 +77,21 @@ def get_all_images_ids(uploaded_images_ids: set[str]) -> set[str]:
     } | uploaded_images_ids
 
 
-def extract_zip(file: UploadFile) -> Path:
+def extract_zip(file_in_memory: io.BytesIO) -> Path:
     tmp_path = Path(tempfile.mkdtemp())
-    with zipfile.ZipFile(file.file, "r") as zip_ref:
+    with zipfile.ZipFile(file_in_memory, "r") as zip_ref:
         zip_ref.extractall(tmp_path)
     return tmp_path
 
 
-def upload_verified_data(file: UploadFile, db: Session = Depends(get_db)) -> None:
-    filename = file.filename
-    if not filename.endswith(".zip"):
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="The file should be a zip file.",
-        )
+def upload_verified_data(
+    file_in_memory: io.BytesIO,
+    db: Session = Depends(get_db),
+) -> None:
+    logger.info("Verifying and Uploading data...")
 
-    tmp_path = extract_zip(file)
+    tmp_path = extract_zip(file_in_memory)
+    logger.debug("Zip file extracted.")
 
     uploaded_data_path = tmp_path / "data"
     check_structure_consistency(
@@ -117,10 +116,12 @@ def upload_verified_data(file: UploadFile, db: Session = Depends(get_db)) -> Non
         "The zip file should contain a csv file named 'triplets.csv'.",
     )
 
-    # We need to load both the whole triplets (that contain all the data around triplets) and only the ids, that will be used to compare with the images
     triplets = load_triplets(triplets_path)
+    logger.debug("Triplets loaded.")
+
     triplets_ids = extract_triplet_ids(triplets)
     check_match_triplets_images(triplets_ids, all_images_ids)
+    logger.debug("Triplets images checked.")
 
     validation_triplets_path = uploaded_data_path / "validation_triplets.csv"
     check_structure_consistency(
@@ -130,28 +131,40 @@ def upload_verified_data(file: UploadFile, db: Session = Depends(get_db)) -> Non
     )
 
     validation_triplets = load_triplets(validation_triplets_path)
+    logger.debug("Validation triplets loaded.")
+
     validation_triplets_ids = extract_triplet_ids(validation_triplets)
     check_match_triplets_images(validation_triplets_ids, all_images_ids)
+    logger.debug("Validation triplets images checked.")
 
-    # If checks pass, add triplets to the database and move images
     crud.update_database(db, triplets, validation_triplets, uploaded_images_path)
+    logger.info("Database updated")
+
     shutil.rmtree(tmp_path)
+    logger.debug("Temporary files removed.")
 
 
-def upload_data(file: UploadFile, db: Session = Depends(get_db)) -> None:
-    logger.debug("Uploading data ...")
-    tmp_path = extract_zip(file)
+def upload_data(file_in_memory: io.BytesIO, db: Session = Depends(get_db)) -> None:
+    logger.info("Uploading data ...")
+
+    tmp_path = extract_zip(file_in_memory)
+    logger.debug("Zip file extracted.")
+
     uploaded_data_path = tmp_path / "data"
 
     triplets_path = uploaded_data_path / "triplets.csv"
     triplets = load_triplets(triplets_path)
+    logger.debug("Triplets loaded.")
 
     validation_triplets_path = uploaded_data_path / "validation_triplets.csv"
     validation_triplets = load_triplets(validation_triplets_path)
+    logger.debug("Validation triplets loaded.")
 
     uploaded_images_path = uploaded_data_path / "images"
 
     crud.update_database(db, triplets, validation_triplets, uploaded_images_path)
+    logger.info("Database updated")
+    shutil.rmtree(tmp_path)
 
 
 def check_match_triplets_images(
