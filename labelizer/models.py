@@ -36,3 +36,11 @@ class ValidationTriplet(TripletBase):
 
     left_encoder_id = Column(String, index=True)
     right_encoder_id = Column(String, index=True)
+
+
+class TripletsUploadStatus(Base):
+    __tablename__ = "triplets_upload_status"
+
+    id = Column(Integer, primary_key=True, index=True)
+    to_upload_triplets_count = Column(Integer, index=True)
+    uploaded_triplets_count = Column(Integer, index=True)

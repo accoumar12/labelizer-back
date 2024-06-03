@@ -152,6 +152,12 @@ async def set_triplet_label(
     )
 
 
+@router.get(
+    "/upload_data",
+    summary="Get the status of the data upload.",
+)
+
+
 # We choose to upload both the triplets and validation triplets at once and not separately because we can easily define a format for the zipped folder
 @router.post(
     "/upload_data",

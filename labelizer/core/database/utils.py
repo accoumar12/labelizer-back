@@ -30,13 +30,11 @@ def check_structure_consistency(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=detail)
 
 
-def load_triplets(triplets_path: Path) -> pd.DataFrame:
-    """Load triplets from a CSV file."""
-    try:
-        return pd.read_csv(triplets_path)
-    except FileNotFoundError as e:
-        logger.info("File not found: %s", e)
-        return pd.DataFrame()
+def load_triplets(triplets_path):
+    with open(triplets_path) as f:
+        reader = csv.reader(f)
+        for row in reader:
+            yield row
 
 
 def extract_triplet_ids(triplets: pd.DataFrame) -> set[str]:

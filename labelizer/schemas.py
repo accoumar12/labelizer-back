@@ -49,3 +49,8 @@ class TripletStats(BaseModel):
     unlabeled: int
     validation_labeled: int
     validation_unlabeled: int
+
+
+class TripletsUploadStatus(BaseModel):
+    to_upload_triplets_count: int
+    uploaded_triplets_count: int
