@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import datetime
 import io
 import logging
 import shutil
@@ -30,11 +31,13 @@ def check_structure_consistency(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=detail)
 
 
-def load_triplets(triplets_path):
-    with open(triplets_path) as f:
-        reader = csv.reader(f)
-        for row in reader:
-            yield row
+def load_triplets(triplets_path: Path) -> pd.DataFrame:
+    """Load triplets from a CSV file."""
+    try:
+        return pd.read_csv(triplets_path)
+    except FileNotFoundError as e:
+        logger.info("File not found: %s", e)
+        return pd.DataFrame()
 
 
 def extract_triplet_ids(triplets: pd.DataFrame) -> set[str]:
@@ -144,6 +147,7 @@ def upload_verified_data(
 
 def upload_data(file_in_memory: io.BytesIO, db: Session = Depends(get_db)) -> None:
     logger.info("Uploading data ...")
+    upload_start_time = datetime.datetime.now(datetime.timezone.utc)
 
     tmp_path = extract_zip(file_in_memory)
     logger.debug("Zip file extracted.")
@@ -152,15 +156,27 @@ def upload_data(file_in_memory: io.BytesIO, db: Session = Depends(get_db)) -> No
 
     triplets_path = uploaded_data_path / "triplets.csv"
     triplets = load_triplets(triplets_path)
+    triplets_count = len(triplets)
     logger.debug("Triplets loaded.")
 
     validation_triplets_path = uploaded_data_path / "validation_triplets.csv"
     validation_triplets = load_triplets(validation_triplets_path)
+    validation_triplets_count = len(validation_triplets)
     logger.debug("Validation triplets loaded.")
+
+    all_triplets_count = triplets_count + validation_triplets_count
+    # We create an entry in the database when we know how much triplets we have to upload
+    crud.create_upload_status(db, upload_start_time, all_triplets_count)
 
     uploaded_images_path = uploaded_data_path / "images"
 
-    crud.update_database(db, triplets, validation_triplets, uploaded_images_path)
+    crud.update_database(
+        db,
+        upload_start_time,
+        triplets,
+        validation_triplets,
+        uploaded_images_path,
+    )
     logger.info("Database updated")
     shutil.rmtree(tmp_path)
 

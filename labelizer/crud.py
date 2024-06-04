@@ -18,36 +18,69 @@ if TYPE_CHECKING:
 app_config = AppConfig()
 
 
+def increment_triplets_upload_status(
+    db: Session,
+    upload_start_time: datetime.datetime,
+) -> None:
+    status = (
+        db.query(models.TripletUploadStatus)
+        .filter(models.TripletUploadStatus.upload_start_time == upload_start_time)
+        .first()
+    )
+    status.uploaded_triplets_count += 1
+    db.commit()
+
+
 def create_labelized_triplet(
     db: Session,
+    upload_start_time: datetime.datetime,
     triplet: schemas.LabelizedTriplet,
 ) -> models.LabelizedTriplet:
     db_triplet = models.LabelizedTriplet(**triplet.model_dump())
     db.add(db_triplet)
     db.commit()
     db.refresh(db_triplet)
+    increment_triplets_upload_status(db, upload_start_time)
     return db_triplet
 
 
 def create_validation_triplet(
     db: Session,
+    upload_start_time: datetime.datetime,
     triplet: schemas.ValidationTriplet,
 ) -> models.ValidationTriplet:
     db_triplet = models.ValidationTriplet(**triplet.model_dump())
     db.add(db_triplet)
     db.commit()
     db.refresh(db_triplet)
+    increment_triplets_upload_status(db, upload_start_time)
     return db_triplet
 
 
-def create_labelized_triplets(db: Session, triplets: pd.DataFrame) -> None:
+def create_labelized_triplets(
+    db: Session,
+    upload_start_time: datetime.datetime,
+    triplets: pd.DataFrame,
+) -> None:
     for _, triplet in triplets.iterrows():
-        create_labelized_triplet(db, schemas.LabelizedTriplet(**triplet.to_dict()))
+        create_labelized_triplet(
+            db,
+            upload_start_time,
+            schemas.LabelizedTriplet(**triplet.to_dict()),
+        )
 
 
-def create_validation_triplets(db: Session, triplets: pd.DataFrame) -> None:
+def create_validation_triplets(
+    db: Session,
+    upload_start_time: datetime.datetime,
+    triplets: pd.DataFrame,
+) -> None:
     for _, triplet in triplets.iterrows():
-        create_validation_triplet(db, schemas.ValidationTriplet(**triplet.to_dict()))
+        create_validation_triplet(
+            db,
+            upload_start_time,
+            schemas.ValidationTriplet(**triplet.to_dict()),
+        )
 
 
 def get_first_unlabeled_triplet(
@@ -192,16 +225,33 @@ def delete_all_validation_triplets(db: Session) -> None:
 
 def update_database(
     db: Session,
+    upload_start_time: datetime.datetime,
     triplets: pd.DataFrame,
     validation_triplets: pd.DataFrame,
     uploaded_images_path: Path,
 ) -> None:
     if not triplets.empty:
-        create_labelized_triplets(db, triplets)
+        create_labelized_triplets(db, upload_start_time, triplets)
     if not validation_triplets.empty:
-        create_validation_triplets(db, validation_triplets)
+        create_validation_triplets(db, upload_start_time, validation_triplets)
     uploaded_images = uploaded_images_path.iterdir()
     app_config.images_path.mkdir(parents=True, exist_ok=True)
     for file in uploaded_images:
         destination = app_config.images_path / file.name
         shutil.move(file, destination)
+
+
+def create_upload_status(
+    db: Session,
+    upload_start_time: datetime.datetime,
+    to_upload_triplets_count: int,
+) -> models.TripletUploadStatus:
+    db_status = models.TripletUploadStatus(
+        upload_start_time=upload_start_time,
+        to_upload_triplets_count=to_upload_triplets_count,
+        uploaded_triplets_count=0,
+    )
+    db.add(db_status)
+    db.commit()
+    db.refresh(db_status)
+    return db_status

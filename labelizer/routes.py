@@ -57,7 +57,7 @@ async def get_image(
     response_model=schemas.LabelizerTripletResponse
     | schemas.LabelizerValidationTripletResponse,
 )
-async def make_triplet(
+async def get_triplet(
     user: UserSession,
     validation: bool = False,
     db: Session = Depends(get_db),
@@ -156,8 +156,6 @@ async def set_triplet_label(
     "/upload_data",
     summary="Get the status of the data upload.",
 )
-
-
 # We choose to upload both the triplets and validation triplets at once and not separately because we can easily define a format for the zipped folder
 @router.post(
     "/upload_data",
