@@ -154,7 +154,7 @@ async def set_triplet_label(
 
 @router.get(
     "/upload_data",
-    summary="Get the status of the data upload.",
+    summary="Get the status of the last data upload.",
 )
 async def get_upload_status(
     user: AdminUserSession,
@@ -245,7 +245,7 @@ async def delete_db(
 # Not optimal to give the config this way, would be better to have a common config module to the backend and the frontend
 @router.get(
     "/config",
-    summary="Get some configuration variables of the app",
+    summary="Get some configuration variables of the app.",
 )
 def get_config() -> JSONResponse:
     return JSONResponse(
