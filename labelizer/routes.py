@@ -188,6 +188,8 @@ async def upload_data_in_the_background(
         status_code=status.HTTP_202_ACCEPTED,
     )
 
+    #
+
 
 @router.get(
     "/download_db",
@@ -240,6 +242,15 @@ async def delete_db(
     )
 
 
+# Not optimal to give the config this way, would be better to have a common config module to the backend and the frontend
 @router.get(
     "/config",
+    summary="Get some configuration variables of the app",
 )
+def get_config() -> JSONResponse:
+    return JSONResponse(
+        content={
+            "lock_timeout_in_seconds": app_config.lock_timeout_in_seconds,
+        },
+        status_code=status.HTTP_200_OK,
+    )
