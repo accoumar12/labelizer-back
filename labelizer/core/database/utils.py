@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import datetime
 import io
 import logging
 import shutil
@@ -147,7 +146,6 @@ def upload_verified_data(
 
 def upload_data(file_in_memory: io.BytesIO, db: Session = Depends(get_db)) -> None:
     logger.info("Uploading data ...")
-    upload_start_time = datetime.datetime.now(datetime.timezone.utc)
 
     tmp_path = extract_zip(file_in_memory)
     logger.debug("Zip file extracted.")
@@ -166,13 +164,12 @@ def upload_data(file_in_memory: io.BytesIO, db: Session = Depends(get_db)) -> No
 
     all_triplets_count = triplets_count + validation_triplets_count
     # We create an entry in the database when we know how much triplets we have to upload
-    crud.create_upload_status(db, upload_start_time, all_triplets_count)
+    crud.create_upload_status(db, all_triplets_count)
 
     uploaded_images_path = uploaded_data_path / "images"
 
     crud.update_database(
         db,
-        upload_start_time,
         triplets,
         validation_triplets,
         uploaded_images_path,

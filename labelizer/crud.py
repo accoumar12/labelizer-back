@@ -18,13 +18,13 @@ if TYPE_CHECKING:
 app_config = AppConfig()
 
 
+# We get last status, because we are not going to upload data at the same time... Might cause an issue if several downloads are done at the same time
 def increment_triplets_upload_status(
     db: Session,
-    upload_start_time: datetime.datetime,
 ) -> None:
     status = (
         db.query(models.TripletUploadStatus)
-        .filter(models.TripletUploadStatus.upload_start_time == upload_start_time)
+        .order_by(models.TripletUploadStatus.id.desc())
         .first()
     )
     status.uploaded_triplets_count += 1
@@ -33,56 +33,51 @@ def increment_triplets_upload_status(
 
 def create_labelized_triplet(
     db: Session,
-    upload_start_time: datetime.datetime,
     triplet: schemas.LabelizedTriplet,
 ) -> models.LabelizedTriplet:
     db_triplet = models.LabelizedTriplet(**triplet.model_dump())
     db.add(db_triplet)
     db.commit()
     db.refresh(db_triplet)
-    increment_triplets_upload_status(db, upload_start_time)
+    increment_triplets_upload_status(db)
     return db_triplet
 
 
 def create_validation_triplet(
     db: Session,
-    upload_start_time: datetime.datetime,
     triplet: schemas.ValidationTriplet,
 ) -> models.ValidationTriplet:
     db_triplet = models.ValidationTriplet(**triplet.model_dump())
     db.add(db_triplet)
     db.commit()
     db.refresh(db_triplet)
-    increment_triplets_upload_status(db, upload_start_time)
+    increment_triplets_upload_status(db)
     return db_triplet
 
 
 def create_labelized_triplets(
     db: Session,
-    upload_start_time: datetime.datetime,
     triplets: pd.DataFrame,
 ) -> None:
     for _, triplet in triplets.iterrows():
         create_labelized_triplet(
             db,
-            upload_start_time,
             schemas.LabelizedTriplet(**triplet.to_dict()),
         )
 
 
 def create_validation_triplets(
     db: Session,
-    upload_start_time: datetime.datetime,
     triplets: pd.DataFrame,
 ) -> None:
     for _, triplet in triplets.iterrows():
         create_validation_triplet(
             db,
-            upload_start_time,
             schemas.ValidationTriplet(**triplet.to_dict()),
         )
 
 
+# We make sure two users do not label the same triplet by implementing our own locking mechanism. Not ideal because after the timeout period the triplet will be considered as "unlocked" and could be retrieved by another user.
 def get_first_unlabeled_triplet(
     db: Session,
     lock_timeout_in_seconds: int = app_config.lock_timeout_in_seconds,
@@ -225,15 +220,14 @@ def delete_all_validation_triplets(db: Session) -> None:
 
 def update_database(
     db: Session,
-    upload_start_time: datetime.datetime,
     triplets: pd.DataFrame,
     validation_triplets: pd.DataFrame,
     uploaded_images_path: Path,
 ) -> None:
     if not triplets.empty:
-        create_labelized_triplets(db, upload_start_time, triplets)
+        create_labelized_triplets(db, triplets)
     if not validation_triplets.empty:
-        create_validation_triplets(db, upload_start_time, validation_triplets)
+        create_validation_triplets(db, validation_triplets)
     uploaded_images = uploaded_images_path.iterdir()
     app_config.images_path.mkdir(parents=True, exist_ok=True)
     for file in uploaded_images:
@@ -243,11 +237,9 @@ def update_database(
 
 def create_upload_status(
     db: Session,
-    upload_start_time: datetime.datetime,
     to_upload_triplets_count: int,
 ) -> models.TripletUploadStatus:
     db_status = models.TripletUploadStatus(
-        upload_start_time=upload_start_time,
         to_upload_triplets_count=to_upload_triplets_count,
         uploaded_triplets_count=0,
     )
@@ -255,3 +247,13 @@ def create_upload_status(
     db.commit()
     db.refresh(db_status)
     return db_status
+
+
+def get_upload_status(
+    db: Session,
+) -> models.TripletUploadStatus:
+    return (
+        db.query(models.TripletUploadStatus)
+        .order_by(models.TripletUploadStatus.id.desc())
+        .first()
+    )

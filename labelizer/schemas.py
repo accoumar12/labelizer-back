@@ -52,6 +52,6 @@ class TripletStats(BaseModel):
 
 
 class TripletsUploadStatus(BaseModel):
-    upload_start_time: datetime.datetime | None = None
+    id: int
     to_upload_triplets_count: int = 0
     uploaded_triplets_count: int

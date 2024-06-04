@@ -156,7 +156,15 @@ async def set_triplet_label(
     "/upload_data",
     summary="Get the status of the data upload.",
 )
+async def get_upload_status(
+    user: AdminUserSession,
+    db: Session = Depends(get_db),
+) -> schemas.TripletsUploadStatus:
+    return crud.get_upload_status(db)
+
+
 # We choose to upload both the triplets and validation triplets at once and not separately because we can easily define a format for the zipped folder
+# Use of background tasks, might be replaced with celery if performance or scaling issues arise
 @router.post(
     "/upload_data",
     summary="Upload new data, including images and triplets. The data has to be a zipped folder containing a csv file named triplets, a csv file named validation_triplets and a folder named images containing the images. Needs to be authorized as an admin user. If you do not want to include triplets, you can provide a csv file with no line but still the header.",
@@ -230,3 +238,8 @@ async def delete_db(
         content={"message": "Database deleted successfully."},
         status_code=status.HTTP_200_OK,
     )
+
+
+@router.get(
+    "/config",
+)

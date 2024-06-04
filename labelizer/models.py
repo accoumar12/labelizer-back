@@ -41,6 +41,6 @@ class ValidationTriplet(TripletBase):
 class TripletUploadStatus(Base):
     __tablename__ = "triplets_upload_status"
 
-    upload_start_time = Column(DateTime(timezone=True), primary_key=True, index=True)
+    id = Column(Integer, primary_key=True, index=True)
     to_upload_triplets_count = Column(Integer, index=True)
     uploaded_triplets_count = Column(Integer, index=True)
