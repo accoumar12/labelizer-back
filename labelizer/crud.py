@@ -31,11 +31,11 @@ def increment_triplets_upload_status(
     db.commit()
 
 
-def create_labelized_triplet(
+def create_labeled_triplet(
     db: Session,
-    triplet: schemas.LabelizedTriplet,
-) -> models.LabelizedTriplet:
-    db_triplet = models.LabelizedTriplet(**triplet.model_dump())
+    triplet: schemas.LabeledTriplet,
+) -> models.LabeledTriplet:
+    db_triplet = models.LabeledTriplet(**triplet.model_dump())
     db.add(db_triplet)
     db.commit()
     db.refresh(db_triplet)
@@ -55,14 +55,14 @@ def create_validation_triplet(
     return db_triplet
 
 
-def create_labelized_triplets(
+def create_labeled_triplets(
     db: Session,
     triplets: pd.DataFrame,
 ) -> None:
     for _, triplet in triplets.iterrows():
-        create_labelized_triplet(
+        create_labeled_triplet(
             db,
-            schemas.LabelizedTriplet(**triplet.to_dict()),
+            schemas.LabeledTriplet(**triplet.to_dict()),
         )
 
 
@@ -81,7 +81,7 @@ def create_validation_triplets(
 def get_first_unlabeled_triplet(
     db: Session,
     lock_timeout_in_seconds: int = app_config.lock_timeout_in_seconds,
-) -> models.LabelizedTriplet:
+) -> models.LabeledTriplet:
     now_time = datetime.datetime.now(datetime.timezone.utc)
     # We define the timeout as the current time minus the lock_timeout_in_seconds, so the boundary, cutoff below which the triplet is considered as "unlocked", "stale"
     cutoff_time = now_time - datetime.timedelta(
@@ -89,12 +89,12 @@ def get_first_unlabeled_triplet(
     )
     # We retrieve the first triplet that is unlabeled and either has never been retrieved or has been retrieved before the cutoff time
     triplet = (
-        db.query(models.LabelizedTriplet)
+        db.query(models.LabeledTriplet)
         .filter(
-            (models.LabelizedTriplet.label.is_(None))
+            (models.LabeledTriplet.label.is_(None))
             & (
-                (models.LabelizedTriplet.retrieved_at.is_(None))
-                | (models.LabelizedTriplet.retrieved_at < cutoff_time)
+                (models.LabeledTriplet.retrieved_at.is_(None))
+                | (models.LabeledTriplet.retrieved_at < cutoff_time)
             ),
         )
         .first()
@@ -132,8 +132,8 @@ def get_first_unlabeled_validation_triplet(
 
 def count_labeled_triplets(db: Session) -> int:
     return (
-        db.query(models.LabelizedTriplet)
-        .filter(models.LabelizedTriplet.label.isnot(None))
+        db.query(models.LabeledTriplet)
+        .filter(models.LabeledTriplet.label.isnot(None))
         .count()
     )
 
@@ -148,8 +148,8 @@ def count_labeled_validation_triplets(db: Session) -> int:
 
 def count_unlabeled_triplets(db: Session) -> int:
     return (
-        db.query(models.LabelizedTriplet)
-        .filter(models.LabelizedTriplet.label.is_(None))
+        db.query(models.LabeledTriplet)
+        .filter(models.LabeledTriplet.label.is_(None))
         .count()
     )
 
@@ -169,8 +169,8 @@ def set_triplet_label(
     user_id: str,
 ) -> None:
     triplet = (
-        db.query(models.LabelizedTriplet)
-        .filter(models.LabelizedTriplet.id == triplet_id)
+        db.query(models.LabeledTriplet)
+        .filter(models.LabeledTriplet.id == triplet_id)
         .first()
     )
     if triplet is None:
@@ -201,7 +201,7 @@ def set_validation_triplet_label(
 
 
 def get_all_triplets(db: Session) -> list[dict]:
-    return [triplet.to_dict() for triplet in db.query(models.LabelizedTriplet).all()]
+    return [triplet.to_dict() for triplet in db.query(models.LabeledTriplet).all()]
 
 
 def get_all_validation_triplets(db: Session) -> list[dict]:
@@ -209,7 +209,7 @@ def get_all_validation_triplets(db: Session) -> list[dict]:
 
 
 def delete_all_triplets(db: Session) -> None:
-    db.query(models.LabelizedTriplet).delete()
+    db.query(models.LabeledTriplet).delete()
     db.commit()
 
 
@@ -225,7 +225,7 @@ def update_database(
     uploaded_images_path: Path,
 ) -> None:
     if not triplets.empty:
-        create_labelized_triplets(db, triplets)
+        create_labeled_triplets(db, triplets)
     if not validation_triplets.empty:
         create_validation_triplets(db, validation_triplets)
     uploaded_images = uploaded_images_path.iterdir()

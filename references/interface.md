@@ -41,7 +41,7 @@ def get_image(user_id: str, image_id: str):
 
 ---------------------
 
-table name: triplet_labelized
+table name: triplet_labeled
 
 
 class SelectedItemType(StrEnum):
@@ -52,7 +52,7 @@ class SelectedItemType(StrEnum):
 
 
 @dataclass
-class TripletLabelized:
+class TripletLabeled:
     id: str
     ref_id: str
     left_id: str
@@ -60,4 +60,4 @@ class TripletLabelized:
     label: SelectedItemType | None  = None
     user_id: str | None = None
     
-select * from triplet_labelized where label is not null limit 1
+select * from triplet_labeled where label is not null limit 1

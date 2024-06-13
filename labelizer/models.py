@@ -25,8 +25,8 @@ class TripletBase(Base):
         return {c.key: getattr(self, c.key) for c in self.__table__.columns}
 
 
-class LabelizedTriplet(TripletBase):
-    __tablename__ = "labelized_triplets"
+class LabeledTriplet(TripletBase):
+    __tablename__ = "labeled_triplets"
 
     encoder_id = Column(String, index=True)
 

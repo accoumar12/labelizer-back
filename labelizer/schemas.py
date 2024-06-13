@@ -29,7 +29,7 @@ class LabelizerValidationTripletResponse(TripletBase):
     right_encoder_id: str
 
 
-class LabelizedTriplet(TripletBase):
+class LabeledTriplet(TripletBase):
     encoder_id: str
     label: SelectedItemType | None = None
     user_id: str | None = None

@@ -1,8 +1,7 @@
 ## Back
 
 ## Front
-- Timeout de 30s pour cohérence avec le backend
-- nom du fichier telechargé avec le filename et pas download
+- Petit détail visuel sur le reload de l onglet validation
 
 ## Misc
 - gestion des droits pour déployer
