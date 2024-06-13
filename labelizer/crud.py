@@ -200,12 +200,23 @@ def set_validation_triplet_label(
     db.commit()
 
 
+# We only retrieve the triplets that have been labeled
 def get_all_triplets(db: Session) -> list[dict]:
-    return [triplet.to_dict() for triplet in db.query(models.LabeledTriplet).all()]
+    return [
+        triplet.to_dict()
+        for triplet in db.query(models.LabeledTriplet)
+        .filter(models.LabeledTriplet.label.isnot(None))
+        .all()
+    ]
 
 
 def get_all_validation_triplets(db: Session) -> list[dict]:
-    return [triplet.to_dict() for triplet in db.query(models.ValidationTriplet).all()]
+    return [
+        triplet.to_dict()
+        for triplet in db.query(models.ValidationTriplet)
+        .filter(models.ValidationTriplet.label.isnot(None))
+        .all()
+    ]
 
 
 def delete_all_triplets(db: Session) -> None:
