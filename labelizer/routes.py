@@ -183,12 +183,6 @@ async def upload_data_in_the_background(
     background_tasks.add_task(upload_data, file_in_memory, db)
 
     logger.info("Data upload starts in the background.")
-    return JSONResponse(
-        content={"message": "Data upload starts in the background."},
-        status_code=status.HTTP_202_ACCEPTED,
-    )
-
-    #
 
 
 @router.get(
