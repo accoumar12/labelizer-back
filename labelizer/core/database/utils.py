@@ -9,6 +9,7 @@ from pathlib import Path
 
 import pandas as pd
 from fastapi import Depends, HTTPException, status
+from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 
 from labelizer import crud
@@ -176,6 +177,10 @@ def upload_data(file_in_memory: io.BytesIO, db: Session = Depends(get_db)) -> No
     )
     logger.info("Database updated")
     shutil.rmtree(tmp_path)
+    return JSONResponse(
+        content={"message": "Data uploaded successfully."},
+        status_code=status.HTTP_200_OK,
+    )
 
 
 def check_match_triplets_images(
