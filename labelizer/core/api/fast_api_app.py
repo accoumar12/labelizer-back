@@ -6,10 +6,14 @@ from labelizer import APP_VERSION, models
 from labelizer.core.api.logging import setup_logging
 from labelizer.core.api.middlewares import RequestContextLogMiddleware
 from labelizer.core.database.init_database import engine
-from labelizer.routes import router as label_router
+from labelizer.core.routes.config_routes import config_router
+
+# from labelizer.core.routes.similarity_routes import similarity_router
+from labelizer.core.routes.triplets_routes import triplets_router
+from labelizer.core.routes.utility_routes import utility_router
 
 description = """
-API used to manage the labeling of triplets of images.
+Labelizer API.
 """
 
 ROOT_PATH = "/api/labelizer/v1"
@@ -36,7 +40,10 @@ def setup_app() -> FastAPI:
     setup_logging(logging.DEBUG)
 
     routers = [
-        label_router,
+        config_router,
+        utility_router,
+        triplets_router,
+        # similarity_router,
     ]
     for router in routers:
         _app.include_router(router, prefix=ROOT_PATH)

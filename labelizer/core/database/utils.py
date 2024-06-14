@@ -181,10 +181,6 @@ def upload_data(file_in_memory: io.BytesIO, db: Session = Depends(get_db)) -> No
     )
     logger.info("Database updated")
     shutil.rmtree(tmp_path)
-    # return JSONResponse(
-    #     content={"message": "Data uploaded successfully."},
-    #     status_code=status.HTTP_200_OK,
-    # )
 
 
 def check_match_triplets_images(
