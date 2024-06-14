@@ -42,6 +42,7 @@ def create_labeled_triplet(
     db.add(db_triplet)
     db.commit()
     db.refresh(db_triplet)
+    logging.debug("Labeled triplet added to the database.")
     increment_triplets_upload_status(db)
     return db_triplet
 
@@ -263,12 +264,13 @@ def update_database(
     validation_triplets: pd.DataFrame,
     uploaded_images_path: Path,
 ) -> None:
+    # Has to be done in this order because of foreign key constraints, which are not enforced with SQLite but are with PostgreSQL !
+    if not items.empty:
+        create_items(db, items)
     if not triplets.empty:
         create_labeled_triplets(db, triplets)
     if not validation_triplets.empty:
         create_validation_triplets(db, validation_triplets)
-    if not items.empty:
-        create_items(db, items)
     uploaded_images = uploaded_images_path.iterdir()
     app_config.images_path.mkdir(parents=True, exist_ok=True)
     for file in uploaded_images:

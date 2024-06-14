@@ -4,7 +4,7 @@ run:
 
 ## Delete the database (useful for testing)
 delete_db:
-	rm -rf data/labelizer.db
+	sudo -u postgres psql -c "DROP DATABASE IF EXISTS labelizer_db;"
 #################################################################################
 # Self Documenting Commands                                                     #
 #################################################################################
