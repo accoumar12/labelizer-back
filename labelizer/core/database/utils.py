@@ -169,11 +169,13 @@ def upload_data(file_in_memory: io.BytesIO, db: Session = Depends(get_db)) -> No
     crud.create_upload_status(db, all_triplets_count)
 
     items = load_data(uploaded_data_path / "items.csv")
+    logger.debug("Items loaded.")
 
     uploaded_images_path = uploaded_data_path / "images"
 
     crud.update_database(
         db,
+        items,
         triplets,
         validation_triplets,
         uploaded_images_path,

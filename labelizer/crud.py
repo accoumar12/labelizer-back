@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import datetime
+import logging
 import shutil
 from typing import TYPE_CHECKING
 
@@ -16,6 +17,8 @@ if TYPE_CHECKING:
     from labelizer.crud import SelectedItemType
 
 app_config = AppConfig()
+
+logger = logging.getLogger()
 
 
 # We get last status, because we are not going to upload data at the same time... Might cause an issue if several downloads are done at the same time
@@ -75,6 +78,7 @@ def create_labeled_triplets(
             db,
             schemas.LabeledTriplet(**triplet.to_dict()),
         )
+    logger.debug("Labeled triplets added to the database.")
 
 
 def create_validation_triplets(
@@ -86,6 +90,7 @@ def create_validation_triplets(
             db,
             schemas.ValidationTriplet(**triplet.to_dict()),
         )
+    logger.debug("Validation triplets added to the database.")
 
 
 def create_items(

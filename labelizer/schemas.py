@@ -14,22 +14,27 @@ class Item(BaseModel):
 
 class TripletBase(BaseModel):
     reference_id: str
-    reference_length: float
     left_id: str
-    left_length: float
     right_id: str
-    right_length: float
 
     class Config:
         from_attributes = True
 
 
+# Schema for the API responses
 class LabelizerTripletResponse(TripletBase):
     id: int
+    reference_length: float
+    left_length: float
+    right_length: float
 
 
+# Same
 class LabelizerValidationTripletResponse(TripletBase):
     id: int
+    reference_length: float
+    left_length: float
+    right_length: float
     left_encoder_id: str
     right_encoder_id: str
 
