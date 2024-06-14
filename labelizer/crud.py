@@ -55,6 +55,17 @@ def create_validation_triplet(
     return db_triplet
 
 
+def create_item(
+    db: Session,
+    item: schemas.Item,
+) -> models.Item:
+    db_item = models.Item(**item.model_dump())
+    db.add(db_item)
+    db.commit()
+    db.refresh(db_item)
+    return db_item
+
+
 def create_labeled_triplets(
     db: Session,
     triplets: pd.DataFrame,
@@ -74,6 +85,17 @@ def create_validation_triplets(
         create_validation_triplet(
             db,
             schemas.ValidationTriplet(**triplet.to_dict()),
+        )
+
+
+def create_items(
+    db: Session,
+    items: pd.DataFrame,
+) -> None:
+    for _, item in items.iterrows():
+        create_item(
+            db,
+            schemas.Item(**item.to_dict()),
         )
 
 
@@ -231,6 +253,7 @@ def delete_all_validation_triplets(db: Session) -> None:
 
 def update_database(
     db: Session,
+    items: pd.DataFrame,
     triplets: pd.DataFrame,
     validation_triplets: pd.DataFrame,
     uploaded_images_path: Path,
@@ -239,6 +262,8 @@ def update_database(
         create_labeled_triplets(db, triplets)
     if not validation_triplets.empty:
         create_validation_triplets(db, validation_triplets)
+    if not items.empty:
+        create_items(db, items)
     uploaded_images = uploaded_images_path.iterdir()
     app_config.images_path.mkdir(parents=True, exist_ok=True)
     for file in uploaded_images:

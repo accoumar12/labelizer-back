@@ -31,10 +31,10 @@ def check_structure_consistency(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=detail)
 
 
-def load_triplets(triplets_path: Path) -> pd.DataFrame:
+def load_data(data_path: Path) -> pd.DataFrame:
     """Load triplets from a CSV file."""
     try:
-        return pd.read_csv(triplets_path)
+        return pd.read_csv(data_path)
     except FileNotFoundError as e:
         logger.info("File not found: %s", e)
         return pd.DataFrame()
@@ -117,7 +117,7 @@ def upload_verified_data(
         "The zip file should contain a csv file named 'triplets.csv'.",
     )
 
-    triplets = load_triplets(triplets_path)
+    triplets = load_data(triplets_path)
     logger.debug("Triplets loaded.")
 
     triplets_ids = extract_triplet_ids(triplets)
@@ -131,7 +131,7 @@ def upload_verified_data(
         "The zip file should contain a csv file named 'validation_triplets.csv'.",
     )
 
-    validation_triplets = load_triplets(validation_triplets_path)
+    validation_triplets = load_data(validation_triplets_path)
     logger.debug("Validation triplets loaded.")
 
     validation_triplets_ids = extract_triplet_ids(validation_triplets)
@@ -154,18 +154,21 @@ def upload_data(file_in_memory: io.BytesIO, db: Session = Depends(get_db)) -> No
     uploaded_data_path = tmp_path / "data"
 
     triplets_path = uploaded_data_path / "triplets.csv"
-    triplets = load_triplets(triplets_path)
+    triplets = load_data(triplets_path)
     triplets_count = len(triplets)
     logger.debug("Triplets loaded.")
 
     validation_triplets_path = uploaded_data_path / "validation_triplets.csv"
-    validation_triplets = load_triplets(validation_triplets_path)
+    validation_triplets = load_data(validation_triplets_path)
     validation_triplets_count = len(validation_triplets)
     logger.debug("Validation triplets loaded.")
 
     all_triplets_count = triplets_count + validation_triplets_count
+
     # We create an entry in the database when we know how much triplets we have to upload
     crud.create_upload_status(db, all_triplets_count)
+
+    items = load_data(uploaded_data_path / "items.csv")
 
     uploaded_images_path = uploaded_data_path / "images"
 

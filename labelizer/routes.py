@@ -78,23 +78,23 @@ async def get_triplet(
         return schemas.LabelizerValidationTripletResponse(
             id=triplet.id,
             reference_id=triplet.reference_id,
-            reference_length=triplet.reference_length,
+            reference_length=triplet.reference_item.length,
             left_id=triplet.left_id,
-            left_length=triplet.left_length,
+            left_length=triplet.left_item.length,
             left_encoder_id=triplet.left_encoder_id,
             right_id=triplet.right_id,
-            right_length=triplet.right_length,
+            right_length=triplet.right_item.length,
             right_encoder_id=triplet.right_encoder_id,
         )
     logger.info("Triplet %s retrieved.", triplet.id)
     return schemas.LabelizerTripletResponse(
         id=triplet.id,
         reference_id=triplet.reference_id,
-        reference_length=triplet.reference_length,
+        reference_length=triplet.reference_item.length,
         left_id=triplet.left_id,
-        left_length=triplet.left_length,
+        left_length=triplet.left_item.length,
         right_id=triplet.right_id,
-        right_length=triplet.right_length,
+        right_length=triplet.right_item.length,
     )
 
 
@@ -154,7 +154,7 @@ async def set_triplet_label(
 
 @router.get(
     "/upload_data",
-    summary="Get the status of the last data upload.",
+    summary="Get the status of the last triplets data upload.",
 )
 async def get_upload_status(
     user: AdminUserSession,

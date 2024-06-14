@@ -7,6 +7,11 @@ from pydantic import BaseModel
 from labelizer.types import SelectedItemType
 
 
+class Item(BaseModel):
+    id: str
+    length: float
+
+
 class TripletBase(BaseModel):
     reference_id: str
     reference_length: float

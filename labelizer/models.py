@@ -1,4 +1,6 @@
-from sqlalchemy import Column, DateTime, Enum, Float, Integer, String
+from sqlalchemy import Column, DateTime, Enum, Float, ForeignKey, Integer, String
+from sqlalchemy.ext.declarative import declared_attr
+from sqlalchemy.orm import relationship
 
 from labelizer.core.database.init_database import Base
 from labelizer.types import SelectedItemType
@@ -9,12 +11,9 @@ class TripletBase(Base):
     __abstract__ = True
 
     id = Column(Integer, primary_key=True, index=True)
-    reference_id = Column(String, index=True)
-    reference_length = Column(Float, index=True)
-    left_id = Column(String, index=True)
-    left_length = Column(Float, index=True)
-    right_id = Column(String, index=True)
-    right_length = Column(Float, index=True)
+    reference_id = Column(String, ForeignKey("items.id"), index=True)
+    left_id = Column(String, ForeignKey("items.id"), index=True)
+    right_id = Column(String, ForeignKey("items.id"), index=True)
     label = Column(Enum(SelectedItemType), index=True)
     user_id = Column(String, index=True)
     # We add a "retrieved_at" column to manage the locking of the triplets, so two users will not deal with the same triplet
@@ -23,6 +22,18 @@ class TripletBase(Base):
     # This method is used to convert the object to a dictionary, useful for retrieving the csv when we download the database
     def to_dict(self) -> dict:
         return {c.key: getattr(self, c.key) for c in self.__table__.columns}
+
+    @declared_attr
+    def reference_item(cls):
+        return relationship("Item", foreign_keys=[cls.reference_id])
+
+    @declared_attr
+    def left_item(cls):
+        return relationship("Item", foreign_keys=[cls.left_id])
+
+    @declared_attr
+    def right_item(cls):
+        return relationship("Item", foreign_keys=[cls.right_id])
 
 
 class LabeledTriplet(TripletBase):
@@ -46,5 +57,7 @@ class TripletUploadStatus(Base):
     uploaded_triplets_count = Column(Integer, index=True)
 
 
-class Entity(Base):
-    __tablename__ = "entities"
+class Item(Base):
+    __tablename__ = "items"
+    id = Column(String, primary_key=True, index=True)
+    length = Column(Float, index=True)
