@@ -44,3 +44,7 @@ class TripletUploadStatus(Base):
     id = Column(Integer, primary_key=True, index=True)
     to_upload_triplets_count = Column(Integer, index=True)
     uploaded_triplets_count = Column(Integer, index=True)
+
+
+class Entity(Base):
+    __tablename__ = "entities"
