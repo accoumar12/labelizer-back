@@ -12,6 +12,7 @@ class AppConfig:
 
     def __init__(self) -> None:
         workspace_folder = Path(os.environ["ROOT_PATH"])
+        self.db_url = os.environ["DB_URL"]
         self.dev_mod = bool(os.environ.get("DEV_MOD", False))
         self.images_path = workspace_folder / "data" / "images"
         self.lock_timeout_in_seconds = 30

@@ -1,13 +1,16 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import declarative_base, sessionmaker
 
-SQLALCHEMY_DATABASE_URL = "postgresql://maccou:maccou@localhost:5432/labelizer_db"
-# SQLALCHEMY_DATABASE_URL = "sqlite:///.//data/labelizer.db"
+from labelizer.app_config import AppConfig
+
+app_config = AppConfig()
+
+# Convert back to string the posix path for the interface
+SQLALCHEMY_DATABASE_URL = app_config.db_url
 
 
 engine = create_engine(
     SQLALCHEMY_DATABASE_URL,
-    # connect_args={"check_same_thread": False},
 )
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
