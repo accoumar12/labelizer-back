@@ -78,6 +78,38 @@ async def get_triplet(
     )
 
 
+@triplets_router.post(
+    "/triplet",
+    summary="Set the label of a triplet according to the user's choice.",
+    status_code=status.HTTP_200_OK,
+)
+async def set_triplet_label(
+    user: UserSession,
+    triplet_id: str,
+    label: SelectedItemType,
+    validation: bool = False,
+    db: Session = Depends(get_db),
+) -> JSONResponse:
+    try:
+        crud.set_validation_triplet_label(
+            db,
+            triplet_id,
+            label,
+            user.uid,
+        ) if validation else crud.set_triplet_label(db, triplet_id, label, user.uid)
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND) from e
+
+    if validation:
+        logger.info("Validation Triplet %s labeled as %s.", triplet_id, label)
+    else:
+        logger.info("Triplet %s labeled as %s.", triplet_id, label)
+    return JSONResponse(
+        content={"message": "Label set successfully."},
+        status_code=status.HTTP_200_OK,
+    )
+
+
 @triplets_router.get(
     "/triplet/stats",
     summary="Get the number of labeled and unlabeled triplets.",
@@ -149,38 +181,6 @@ async def delete_db(
         logger.info("Database deleted.")
     return JSONResponse(
         content={"message": "Database deleted successfully."},
-        status_code=status.HTTP_200_OK,
-    )
-
-
-@triplets_router.post(
-    "/triplet",
-    summary="Set the label of a triplet according to the user's choice.",
-    status_code=status.HTTP_200_OK,
-)
-async def set_triplet_label(
-    user: UserSession,
-    triplet_id: str,
-    label: SelectedItemType,
-    validation: bool = False,
-    db: Session = Depends(get_db),
-) -> JSONResponse:
-    try:
-        crud.set_validation_triplet_label(
-            db,
-            triplet_id,
-            label,
-            user.uid,
-        ) if validation else crud.set_triplet_label(db, triplet_id, label, user.uid)
-    except ValueError as e:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND) from e
-
-    if validation:
-        logger.info("Validation Triplet %s labeled as %s.", triplet_id, label)
-    else:
-        logger.info("Triplet %s labeled as %s.", triplet_id, label)
-    return JSONResponse(
-        content={"message": "Label set successfully."},
         status_code=status.HTTP_200_OK,
     )
 
