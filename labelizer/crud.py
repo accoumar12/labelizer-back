@@ -263,8 +263,16 @@ def create_upload_status(
 def get_upload_status(
     db: Session,
 ) -> models.TripletUploadStatus:
-    return (
+    upload_status = (
         db.query(models.TripletUploadStatus)
         .order_by(models.TripletUploadStatus.id.desc())
         .first()
     )
+    if upload_status is None:
+        # Return a default TripletUploadStatus object when there is no record in the database, because we experienced a bug when no data was uploaded yet
+        return models.TripletUploadStatus(
+            id=0,
+            to_upload_triplets_count=0,
+            uploaded_triplets_count=0,
+        )
+    return upload_status
