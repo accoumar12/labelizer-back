@@ -10,6 +10,7 @@ from labelizer.types import SelectedItemType
 class Item(BaseModel):
     id: str
     length: float
+    vector: list[float]
 
 
 class TripletBase(BaseModel):

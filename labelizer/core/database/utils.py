@@ -41,12 +41,17 @@ def load_triplets(data_path: Path) -> pd.DataFrame:
 def load_items(data_path: Path) -> pd.DataFrame:
     try:
         items = pd.read_csv(data_path)
+        # We want to convert the string of the vector to a list of floats
         items["vector"] = (
             items["vector"].str.split(",").apply(lambda x: list(map(float, x)))
         )
+
     except FileNotFoundError as e:
         logger.info("File not found: %s", e)
         return pd.DataFrame()
+
+    else:
+        return items
 
 
 def extract_triplet_ids(triplets: pd.DataFrame) -> set[str]:
@@ -177,7 +182,7 @@ def upload_data(file_in_memory: io.BytesIO, db: Session = Depends(get_db)) -> No
     # We create an entry in the database when we know how much triplets we have to upload
     crud.create_upload_status(db, all_triplets_count)
 
-    items = load_triplets(uploaded_data_path / "items.csv")
+    items = load_items(uploaded_data_path / "items.csv")
     logger.debug("Items loaded.")
 
     uploaded_images_path = uploaded_data_path / "images"
