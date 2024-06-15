@@ -1,7 +1,7 @@
 from pgvector.sqlalchemy import Vector
 from sqlalchemy import Column, DateTime, Enum, Float, ForeignKey, Integer, String
 from sqlalchemy.ext.declarative import declared_attr
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import mapped_column, relationship
 
 from labelizer.app_config import AppConfig
 from labelizer.core.database.init_database import Base
@@ -65,4 +65,4 @@ class Item(Base):
     __tablename__ = "items"
     id = Column(String, primary_key=True, index=True)
     length = Column(Float, index=True)
-    vector = Column(Vector(app_config.vector_dimension), index=True)
+    vector = mapped_column(Vector(app_config.vector_dimension), index=True)
