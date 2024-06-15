@@ -5,7 +5,6 @@ from labelizer.app_config import AppConfig
 
 app_config = AppConfig()
 
-# Convert back to string the posix path for the interface
 SQLALCHEMY_DATABASE_URL = app_config.db_url
 
 

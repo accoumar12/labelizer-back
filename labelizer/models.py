@@ -65,4 +65,4 @@ class Item(Base):
     __tablename__ = "items"
     id = Column(String, primary_key=True, index=True)
     length = Column(Float, index=True)
-    vector = Column(Vector(), index=True)
+    vector = Column(Vector(app_config.vector_dimension), index=True)
