@@ -65,4 +65,5 @@ class Item(Base):
     __tablename__ = "items"
     id = Column(String, primary_key=True, index=True)
     length = Column(Float, index=True)
-    vector = mapped_column(Vector(app_config.vector_dimension), index=True)
+    # Be careful to remove the index here, otherwise we can not load the data (too large for b-tree index) !
+    vector = mapped_column(Vector(app_config.vector_dimension))
