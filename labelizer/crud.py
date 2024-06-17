@@ -42,7 +42,7 @@ def create_labeled_triplet(
     db.add(db_triplet)
     db.commit()
     db.refresh(db_triplet)
-    logging.debug("Labeled triplet added to the database.")
+    logger.debug("Labeled triplet added to the database.")
     increment_triplets_upload_status(db)
     return db_triplet
 
@@ -55,6 +55,7 @@ def create_validation_triplet(
     db.add(db_triplet)
     db.commit()
     db.refresh(db_triplet)
+    logger.debug("Validation triplet added to the database.")
     increment_triplets_upload_status(db)
     return db_triplet
 
@@ -96,6 +97,13 @@ def create_validation_triplets(
             schemas.ValidationTriplet(**triplet.to_dict()),
         )
     logger.debug("Validation triplets added to the database.")
+
+
+def get_item(
+    db: Session,
+    item_id: str,
+) -> models.Item:
+    return db.query(models.Item).filter_by(id=item_id).first()
 
 
 def create_items(

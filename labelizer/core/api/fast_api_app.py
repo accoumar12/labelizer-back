@@ -7,8 +7,7 @@ from labelizer.core.api.logging import setup_logging
 from labelizer.core.api.middlewares import RequestContextLogMiddleware
 from labelizer.core.database.init_database import engine
 from labelizer.core.routes.config_routes import config_router
-
-# from labelizer.core.routes.similarity_routes import similarity_router
+from labelizer.core.routes.similarity_routes import similarity_router
 from labelizer.core.routes.triplets_routes import triplets_router
 from labelizer.core.routes.utility_routes import utility_router
 
@@ -43,7 +42,7 @@ def setup_app() -> FastAPI:
         config_router,
         utility_router,
         triplets_router,
-        # similarity_router,
+        similarity_router,
     ]
     for router in routers:
         _app.include_router(router, prefix=ROOT_PATH)
