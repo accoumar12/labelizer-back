@@ -1,10 +1,8 @@
-from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy import select, text
+from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
 from labelizer.core.database.get_database import get_db
-from labelizer.items import crud
-from labelizer.items.models import Item
+from labelizer.similarity.flows import compute_similarity_score, get_nearest_neighbors
 
 router = APIRouter(tags=["Similarity"])
 
@@ -14,25 +12,12 @@ router = APIRouter(tags=["Similarity"])
     summary="Compute a cosine similarity score between two items.",
     status_code=200,
 )
-def compute_similarity_score(
+def compute_similarity_score_endpoint(
     item1_id: str,
     item2_id: str,
     db: Session = Depends(get_db),
 ) -> dict:
-    item1 = crud.get_item(db, item1_id)
-    item2 = crud.get_item(db, item2_id)
-    if item1 is None or item2 is None:
-        raise HTTPException(status_code=404, detail="Item not found")
-    # Here we have to use the raw SQL queries, see https://github.com/pgvector/pgvector
-    # Notably, we have to convert the vector to a string to comply with the pgvector API
-    item2_vector = str(item2.vector.tolist())
-    similarity_score = db.execute(
-        text(
-            "SELECT 1 - (vector <=> :item2_vector) FROM items WHERE id = :item1_id",
-        ),
-        {"item2_vector": item2_vector, "item1_id": item1.id},
-    ).scalar()
-    return {"similarity_score": similarity_score}
+    return compute_similarity_score(item1_id, item2_id, db)
 
 
 # By default, pgvector performs exact neighbor search. This is what we want here, if we want to approximate the search we might consider indexing the vectors as explained in the docs.
@@ -41,22 +26,9 @@ def compute_similarity_score(
     summary="Get the nearest neighbors of an item.",
     status_code=200,
 )
-def get_nearest_neighbors(
+def get_nearest_neighbors_endpoint(
     item_id: str,
     nearest_neighbors_count: int,
     db: Session = Depends(get_db),
 ) -> dict:
-    item = crud.get_item(db, item_id)
-    if item is None:
-        raise HTTPException(status_code=404, detail="Item not found")
-    # Here we follow the docs from the pgvector python extension https://github.com/pgvector/pgvector-python
-    neighbors = (
-        db.execute(
-            select(Item)
-            .order_by(Item.vector.cosine_distance(item.vector))
-            .limit(nearest_neighbors_count),
-        )
-        .scalars()
-        .all()
-    )
-    return {"neighbors": [neighbor.id for neighbor in neighbors]}
+    return get_nearest_neighbors(item_id, nearest_neighbors_count, db)

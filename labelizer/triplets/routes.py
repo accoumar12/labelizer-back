@@ -13,11 +13,9 @@ from fastapi.responses import JSONResponse, Response
 from sqlalchemy.orm import Session
 from starlette.responses import FileResponse
 
-import labelizer.triplets.schemas
-import labelizer.upload.crud
 from labelizer.core.api.auth.core import AdminUserSession, UserSession
 from labelizer.core.database.get_database import get_db
-from labelizer.triplets import crud
+from labelizer.triplets import crud, schemas
 from labelizer.triplets.enums import SelectedItemType
 from labelizer.triplets.flows import (
     get_all_triplets_csv_stream,
@@ -33,17 +31,14 @@ logger = logging.getLogger()
     "/triplet",
     summary="Get the triplet for the user of the app.",
     status_code=status.HTTP_200_OK,
-    response_model=labelizer.triplets.schemas.LabelizerTripletResponse
-    | labelizer.triplets.schemas.LabelizerValidationTripletResponse,
+    response_model=schemas.LabelizerTripletResponse
+    | schemas.LabelizerValidationTripletResponse,
 )
 async def get_triplet(
     user: UserSession,
     validation: bool = False,
     db: Session = Depends(get_db),
-) -> (
-    labelizer.triplets.schemas.LabelizerTripletResponse
-    | labelizer.triplets.schemas.LabelizerValidationTripletResponse
-):
+) -> schemas.LabelizerTripletResponse | schemas.LabelizerValidationTripletResponse:
     if validation:
         triplet = crud.get_first_unlabeled_validation_triplet(db)
     else:
@@ -57,7 +52,7 @@ async def get_triplet(
         )
     if validation:
         logger.info("Validation Triplet %s retrieved.", triplet.id)
-        return labelizer.triplets.schemas.LabelizerValidationTripletResponse(
+        return schemas.LabelizerValidationTripletResponse(
             id=triplet.id,
             reference_id=triplet.reference_id,
             reference_length=triplet.reference_item.length,
@@ -69,7 +64,7 @@ async def get_triplet(
             right_encoder_id=triplet.right_encoder_id,
         )
     logger.info("Triplet %s retrieved.", triplet.id)
-    return labelizer.triplets.schemas.LabelizerTripletResponse(
+    return schemas.LabelizerTripletResponse(
         id=triplet.id,
         reference_id=triplet.reference_id,
         reference_length=triplet.reference_item.length,
@@ -116,17 +111,17 @@ async def set_triplet_label(
     "/triplet/stats",
     summary="Get the number of labeled and unlabeled triplets.",
     status_code=status.HTTP_200_OK,
-    response_model=labelizer.triplets.schemas.TripletStats,
+    response_model=schemas.TripletStats,
 )
 async def get_triplet_stats(
     user: UserSession,
     db: Session = Depends(get_db),
-) -> labelizer.triplets.schemas.TripletStats:
+) -> schemas.TripletStats:
     labeled_count = crud.count_labeled_triplets(db)
     unlabeled_count = crud.count_unlabeled_triplets(db)
     validation_labeled_count = crud.count_labeled_validation_triplets(db)
     validation_unlabeled_count = crud.count_unlabeled_validation_triplets(db)
-    return labelizer.triplets.schemas.TripletStats(
+    return schemas.TripletStats(
         labeled=labeled_count,
         unlabeled=unlabeled_count,
         validation_labeled=validation_labeled_count,
@@ -194,5 +189,5 @@ async def delete_db(
 async def get_upload_status(
     user: AdminUserSession,
     db: Session = Depends(get_db),
-) -> labelizer.triplets.schemas.TripletsUploadStatus:
-    return labelizer.upload.crud.get_upload_status(db)
+) -> schemas.TripletsUploadStatus:
+    return crud.get_upload_status(db)
