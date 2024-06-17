@@ -1,4 +1,5 @@
 ## Back
+- clarifier les status code etc...
 
 ## Front
 - Petit détail visuel sur le reload de l onglet validation

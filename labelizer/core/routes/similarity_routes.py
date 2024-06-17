@@ -9,8 +9,12 @@ from labelizer.models import Item
 similarity_router = APIRouter(tags=["Similarity"])
 
 
-@similarity_router.get("/similarity/{item1_id}/{item2_id}")
-def compute_similarity(
+@similarity_router.get(
+    "/similarity/{item1_id}/{item2_id}",
+    summary="Compute a cosine similarity score between two items.",
+    status_code=200,
+)
+def compute_similarity_score(
     item1_id: str,
     item2_id: str,
     db: Session = Depends(get_db),
@@ -19,10 +23,12 @@ def compute_similarity(
     item2 = crud.get_item(db, item2_id)
     if item1 is None or item2 is None:
         raise HTTPException(status_code=404, detail="Item not found")
-    item2_vector = str(item2.vector.tolist())  # Convert numpy array to list
+    # Here we have to use the raw SQL queries, see https://github.com/pgvector/pgvector
+    # Notably, we have to convert the vector to a string to comply with the pgvector API
+    item2_vector = str(item2.vector.tolist())
     similarity_score = db.execute(
         text(
-            "SELECT (vector <=> :item2_vector) FROM items WHERE id = :item1_id",
+            "SELECT 1 - (vector <=> :item2_vector) FROM items WHERE id = :item1_id",
         ),
         {"item2_vector": item2_vector, "item1_id": item1.id},
     ).scalar()
@@ -30,15 +36,20 @@ def compute_similarity(
 
 
 # By default, pgvector performs exact neighbor search. This is what we want here, if we want to approximate the search we might consider indexing the vectors as explained in the docs.
-@similarity_router.get("/neighbors/{item_id}")
+@similarity_router.get(
+    "/neighbors/{item_id}",
+    summary="Get the nearest neighbors of an item.",
+    status_code=200,
+)
 def get_nearest_neighbors(
     item_id: str,
     nearest_neighbors_count: int,
     db: Session = Depends(get_db),
-):
+) -> dict:
     item = crud.get_item(db, item_id)
     if item is None:
         raise HTTPException(status_code=404, detail="Item not found")
+    # Here we follow the docs from the pgvector python extension https://github.com/pgvector/pgvector-python
     neighbors = (
         db.execute(
             select(Item)
