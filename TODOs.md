@@ -1,5 +1,6 @@
 ## Back
 - clarifier les status code etc...
+- add custom exceptions
 
 ## Front
 - Petit détail visuel sur le reload de l onglet validation

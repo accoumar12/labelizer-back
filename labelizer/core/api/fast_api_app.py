@@ -7,7 +7,7 @@ from labelizer.config.routes import router as config_router
 from labelizer.core.api.logging import setup_logging
 from labelizer.core.api.middlewares import RequestContextLogMiddleware
 from labelizer.core.database.init_database import Base, engine
-from labelizer.images_utils.routes import router as images_router
+from labelizer.images.routes import router as images_router
 from labelizer.similarity.routes import router as similarity_router
 from labelizer.triplets.routes import router as triplets_router
 from labelizer.upload.routes import router as upload_router
