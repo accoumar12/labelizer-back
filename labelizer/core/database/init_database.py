@@ -3,7 +3,7 @@ import logging
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import declarative_base, sessionmaker
 
-from labelizer.app_config import AppConfig
+from labelizer.config.app_config import AppConfig
 
 app_config = AppConfig()
 

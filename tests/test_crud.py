@@ -3,7 +3,7 @@ from unittest.mock import Mock, patch
 import pandas as pd
 from sqlalchemy.orm import Session
 
-from labelizer import crud, models, schemas
+from labelizer.triplets import crud, models, schemas
 
 
 def test_create_labeled_triplet() -> None:

@@ -1,15 +1,13 @@
+# Not optimal to give the config this way, would be better to have a common config module to the backend and the frontend
 from fastapi import APIRouter, status
 from fastapi.responses import JSONResponse
 
-from labelizer.app_config import AppConfig
+from labelizer.config.app_config import app_config
 
-app_config = AppConfig()
-
-config_router = APIRouter(tags=["Config"])
+router = APIRouter(tags=["Config"])
 
 
-# Not optimal to give the config this way, would be better to have a common config module to the backend and the frontend
-@config_router.get(
+@router.get(
     "/config",
     summary="Get some configuration variables of the app.",
 )

@@ -17,3 +17,6 @@ class AppConfig:
         self.images_path = workspace_folder / "data" / "images"
         self.lock_timeout_in_seconds = 30
         self.vector_dimension = 1280
+
+
+app_config = AppConfig()

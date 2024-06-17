@@ -1,13 +1,9 @@
-from pgvector.sqlalchemy import Vector
-from sqlalchemy import Column, DateTime, Enum, Float, ForeignKey, Integer, String
+from sqlalchemy import Column, DateTime, Enum, ForeignKey, Integer, String
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import relationship
 
-from labelizer.app_config import AppConfig
 from labelizer.core.database.init_database import Base
-from labelizer.types import SelectedItemType
-
-app_config = AppConfig()
+from labelizer.triplets.enums import SelectedItemType
 
 
 class TripletBase(Base):
@@ -27,6 +23,7 @@ class TripletBase(Base):
     def to_dict(self) -> dict:
         return {c.key: getattr(self, c.key) for c in self.__table__.columns}
 
+    # We need to use the @declared_attr decorator to be able to use the relationships in the subclasses
     @declared_attr
     def reference_item(cls):
         return relationship("Item", foreign_keys=[cls.reference_id])
@@ -59,11 +56,3 @@ class TripletUploadStatus(Base):
     id = Column(Integer, primary_key=True, index=True)
     to_upload_triplets_count = Column(Integer, index=True)
     uploaded_triplets_count = Column(Integer, index=True)
-
-
-class Item(Base):
-    __tablename__ = "items"
-    id = Column(String, primary_key=True, index=True)
-    length = Column(Float, index=True)
-    # Be careful to remove the index here, otherwise we can not load the data (too large for b-tree index) !
-    vector = Column(Vector(app_config.vector_dimension))

@@ -2,14 +2,14 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select, text
 from sqlalchemy.orm import Session
 
-from labelizer import crud
 from labelizer.core.database.get_database import get_db
-from labelizer.models import Item
+from labelizer.items import crud
+from labelizer.items.models import Item
 
-similarity_router = APIRouter(tags=["Similarity"])
+router = APIRouter(tags=["Similarity"])
 
 
-@similarity_router.get(
+@router.get(
     "/similarity/{item1_id}/{item2_id}",
     summary="Compute a cosine similarity score between two items.",
     status_code=200,
@@ -36,7 +36,7 @@ def compute_similarity_score(
 
 
 # By default, pgvector performs exact neighbor search. This is what we want here, if we want to approximate the search we might consider indexing the vectors as explained in the docs.
-@similarity_router.get(
+@router.get(
     "/neighbors/{item_id}",
     summary="Get the nearest neighbors of an item.",
     status_code=200,

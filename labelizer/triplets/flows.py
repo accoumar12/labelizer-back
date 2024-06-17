@@ -1,0 +1,26 @@
+from __future__ import annotations
+
+import io
+
+import pandas as pd
+from sqlalchemy.orm import Session
+
+from labelizer.triplets import crud
+
+
+def get_all_triplets_csv_stream(db: Session) -> io.BytesIO:
+    data = crud.get_all_triplets(db)
+    data = pd.DataFrame(data)
+    stream = io.BytesIO()
+    data.to_csv(stream, index=False)
+    stream.seek(0)
+    return stream
+
+
+def get_all_validation_triplets_csv_stream(db: Session) -> io.BytesIO:
+    data = crud.get_all_validation_triplets(db)
+    data = pd.DataFrame(data)
+    stream = io.BytesIO()
+    data.to_csv(stream, index=False)
+    stream.seek(0)
+    return stream
