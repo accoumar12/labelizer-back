@@ -211,7 +211,7 @@ def set_validation_triplet_label(
 
 
 # We only retrieve the triplets that have been labeled
-def get_triplets(db: Session) -> list[dict]:
+def get_labeled_triplets(db: Session) -> list[dict]:
     return [
         triplet.to_dict()
         for triplet in db.query(labelizer.triplets.models.Triplet)
@@ -220,7 +220,7 @@ def get_triplets(db: Session) -> list[dict]:
     ]
 
 
-def get_validation_triplets(db: Session) -> list[dict]:
+def get_validation_labeled_triplets(db: Session) -> list[dict]:
     return [
         triplet.to_dict()
         for triplet in db.query(labelizer.triplets.models.ValidationTriplet)
