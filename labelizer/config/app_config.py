@@ -12,7 +12,11 @@ class AppConfig:
 
     def __init__(self) -> None:
         workspace_folder = Path(os.environ["ROOT_PATH"])
-        self.images_path = workspace_folder / "data" / "images"
-        self.db_path = workspace_folder / "database.db"
-        self.lock_timeout_in_seconds = 30
+        self.db_url = os.environ["DB_URL"]
         self.dev_mod = bool(os.environ.get("DEV_MOD", False))
+        self.images_path = workspace_folder / "data" / "images"
+        self.lock_timeout_in_seconds = 30
+        self.vector_dimension = 1280
+
+
+app_config = AppConfig()
