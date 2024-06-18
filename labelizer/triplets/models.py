@@ -37,8 +37,8 @@ class TripletBase(Base):
         return relationship("Item", foreign_keys=[cls.right_id])
 
 
-class LabeledTriplet(TripletBase):
-    __tablename__ = "labeled_triplets"
+class Triplet(TripletBase):
+    __tablename__ = "triplets"
 
     encoder_id = Column(String, index=True)
 
@@ -48,11 +48,3 @@ class ValidationTriplet(TripletBase):
 
     left_encoder_id = Column(String, index=True)
     right_encoder_id = Column(String, index=True)
-
-
-class TripletUploadStatus(Base):
-    __tablename__ = "triplets_upload_status"
-
-    id = Column(Integer, primary_key=True, index=True)
-    to_upload_triplets_count = Column(Integer, index=True)
-    uploaded_triplets_count = Column(Integer, index=True)

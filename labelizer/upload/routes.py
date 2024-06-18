@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 
 from labelizer.core.api.auth.core import AdminUserSession
 from labelizer.core.database.get_database import get_db
+from labelizer.upload import crud, schemas
 from labelizer.upload.flows import upload_data
 
 router = APIRouter(tags=["Upload"])
@@ -35,3 +36,14 @@ async def upload_data_in_the_background(
         content={"message": "Data upload starts in the background."},
         status_code=status.HTTP_202_ACCEPTED,
     )
+
+
+@router.get(
+    "/upload_data",
+    summary="Get the status of the last triplets data upload.",
+)
+async def get_upload_status(
+    user: AdminUserSession,
+    db: Session = Depends(get_db),
+) -> schemas.AllTripletsUploadStatus:
+    return crud.get_upload_status(db)

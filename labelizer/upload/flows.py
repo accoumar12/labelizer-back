@@ -13,10 +13,10 @@ from labelizer.config.app_config import app_config
 from labelizer.core.database.get_database import get_db
 from labelizer.items.crud import create_items
 from labelizer.items.utils import load_items
-from labelizer.triplets.crud import create_labeled_triplets, create_validation_triplets
+from labelizer.triplets.crud import create_triplets, create_validation_triplets
 from labelizer.triplets.utils import (
     check_match_triplets_images,
-    extract_triplet_ids,
+    extract_triplets_ids,
     load_triplets,
 )
 from labelizer.utils import (
@@ -44,7 +44,7 @@ def update_database(
     if not items.empty:
         create_items(db, items)
     if not triplets.empty:
-        create_labeled_triplets(db, triplets)
+        create_triplets(db, triplets)
     if not validation_triplets.empty:
         create_validation_triplets(db, validation_triplets)
     uploaded_images = uploaded_images_path.iterdir()
@@ -90,7 +90,7 @@ def upload_verified_data(
     triplets = load_triplets(triplets_path)
     logger.debug("Triplets loaded.")
 
-    triplets_ids = extract_triplet_ids(triplets)
+    triplets_ids = extract_triplets_ids(triplets)
     check_match_triplets_images(triplets_ids, all_images_ids)
     logger.debug("Triplets images checked.")
 
@@ -104,7 +104,7 @@ def upload_verified_data(
     validation_triplets = load_triplets(validation_triplets_path)
     logger.debug("Validation triplets loaded.")
 
-    validation_triplets_ids = extract_triplet_ids(validation_triplets)
+    validation_triplets_ids = extract_triplets_ids(validation_triplets)
     check_match_triplets_images(validation_triplets_ids, all_images_ids)
     logger.debug("Validation triplets images checked.")
 

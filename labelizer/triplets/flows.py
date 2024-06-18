@@ -8,8 +8,8 @@ from sqlalchemy.orm import Session
 from labelizer.triplets import crud
 
 
-def get_all_triplets_csv_stream(db: Session) -> io.BytesIO:
-    data = crud.get_all_triplets(db)
+def get_triplets_csv_stream(db: Session) -> io.BytesIO:
+    data = crud.get_triplets(db)
     data = pd.DataFrame(data)
     stream = io.BytesIO()
     data.to_csv(stream, index=False)
@@ -17,8 +17,8 @@ def get_all_triplets_csv_stream(db: Session) -> io.BytesIO:
     return stream
 
 
-def get_all_validation_triplets_csv_stream(db: Session) -> io.BytesIO:
-    data = crud.get_all_validation_triplets(db)
+def get_validation_triplets_csv_stream(db: Session) -> io.BytesIO:
+    data = crud.get_validation_triplets(db)
     data = pd.DataFrame(data)
     stream = io.BytesIO()
     data.to_csv(stream, index=False)

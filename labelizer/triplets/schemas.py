@@ -33,7 +33,7 @@ class LabelizerValidationTripletResponse(TripletBase):
     right_encoder_id: str
 
 
-class LabeledTriplet(TripletBase):
+class Triplet(TripletBase):
     encoder_id: str
     label: SelectedItemType | None = None
     user_id: str | None = None
@@ -45,12 +45,6 @@ class TripletStats(BaseModel):
     unlabeled: int
     validation_labeled: int
     validation_unlabeled: int
-
-
-class TripletsUploadStatus(BaseModel):
-    id: int
-    to_upload_triplets_count: int = 0
-    uploaded_triplets_count: int
 
 
 class ValidationTriplet(TripletBase):

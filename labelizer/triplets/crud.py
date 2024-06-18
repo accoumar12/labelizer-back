@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING
 
 import labelizer.triplets.models
 import labelizer.triplets.schemas
+import labelizer.upload.models
 from labelizer.config.app_config import app_config
 from labelizer.triplets.enums import SelectedItemType
 
@@ -18,28 +19,28 @@ logger = logging.getLogger()
 
 
 # We get last status, because we are not going to upload data at the same time... Might cause an issue if several downloads are done at the same time
-def increment_triplets_upload_status(
+def increment_all_triplets_upload_status(
     db: Session,
 ) -> None:
     status = (
-        db.query(labelizer.triplets.models.TripletUploadStatus)
-        .order_by(labelizer.triplets.models.TripletUploadStatus.id.desc())
+        db.query(labelizer.upload.models.AllTripletsUploadStatus)
+        .order_by(labelizer.upload.models.AllTripletsUploadStatus.id.desc())
         .first()
     )
-    status.uploaded_triplets_count += 1
+    status.uploaded_all_triplets_count += 1
     db.commit()
 
 
-def create_labeled_triplet(
+def create_triplet(
     db: Session,
-    triplet: labelizer.triplets.schemas.LabeledTriplet,
-) -> labelizer.triplets.models.LabeledTriplet:
-    triplet = labelizer.triplets.models.LabeledTriplet(**triplet.model_dump())
+    triplet: labelizer.triplets.schemas.Triplet,
+) -> labelizer.triplets.models.Triplet:
+    triplet = labelizer.triplets.models.Triplet(**triplet.model_dump())
     db.add(triplet)
     db.commit()
     db.refresh(triplet)
     logger.debug("Labeled triplet added to the database.")
-    increment_triplets_upload_status(db)
+    increment_all_triplets_upload_status(db)
     return triplet
 
 
@@ -52,20 +53,20 @@ def create_validation_triplet(
     db.commit()
     db.refresh(triplet)
     logger.debug("Validation triplet added to the database.")
-    increment_triplets_upload_status(db)
+    increment_all_triplets_upload_status(db)
     return triplet
 
 
-def create_labeled_triplets(
+def create_triplets(
     db: Session,
     triplets: pd.DataFrame,
 ) -> None:
     for _, triplet in triplets.iterrows():
-        create_labeled_triplet(
+        create_triplet(
             db,
-            labelizer.triplets.schemas.LabeledTriplet(**triplet.to_dict()),
+            labelizer.triplets.schemas.Triplet(**triplet.to_dict()),
         )
-    logger.debug("Labeled triplets added to the database.")
+    logger.debug("Triplets added to the database.")
 
 
 def create_validation_triplets(
@@ -84,7 +85,7 @@ def create_validation_triplets(
 def get_first_unlabeled_triplet(
     db: Session,
     lock_timeout_in_seconds: int = app_config.lock_timeout_in_seconds,
-) -> labelizer.triplets.models.LabeledTriplet:
+) -> labelizer.triplets.models.Triplet:
     now_time = datetime.datetime.now(datetime.timezone.utc)
     # We define the timeout as the current time minus the lock_timeout_in_seconds, so the boundary, cutoff below which the triplet is considered as "unlocked", "stale"
     cutoff_time = now_time - datetime.timedelta(
@@ -92,12 +93,12 @@ def get_first_unlabeled_triplet(
     )
     # We retrieve the first triplet that is unlabeled and either has never been retrieved or has been retrieved before the cutoff time
     triplet = (
-        db.query(labelizer.triplets.models.LabeledTriplet)
+        db.query(labelizer.triplets.models.Triplet)
         .filter(
-            (labelizer.triplets.models.LabeledTriplet.label.is_(None))
+            (labelizer.triplets.models.Triplet.label.is_(None))
             & (
-                (labelizer.triplets.models.LabeledTriplet.retrieved_at.is_(None))
-                | (labelizer.triplets.models.LabeledTriplet.retrieved_at < cutoff_time)
+                (labelizer.triplets.models.Triplet.retrieved_at.is_(None))
+                | (labelizer.triplets.models.Triplet.retrieved_at < cutoff_time)
             ),
         )
         .first()
@@ -138,8 +139,8 @@ def get_first_unlabeled_validation_triplet(
 
 def count_labeled_triplets(db: Session) -> int:
     return (
-        db.query(labelizer.triplets.models.LabeledTriplet)
-        .filter(labelizer.triplets.models.LabeledTriplet.label.isnot(None))
+        db.query(labelizer.triplets.models.Triplet)
+        .filter(labelizer.triplets.models.Triplet.label.isnot(None))
         .count()
     )
 
@@ -154,8 +155,8 @@ def count_labeled_validation_triplets(db: Session) -> int:
 
 def count_unlabeled_triplets(db: Session) -> int:
     return (
-        db.query(labelizer.triplets.models.LabeledTriplet)
-        .filter(labelizer.triplets.models.LabeledTriplet.label.is_(None))
+        db.query(labelizer.triplets.models.Triplet)
+        .filter(labelizer.triplets.models.Triplet.label.is_(None))
         .count()
     )
 
@@ -175,8 +176,8 @@ def set_triplet_label(
     user_id: str,
 ) -> None:
     triplet = (
-        db.query(labelizer.triplets.models.LabeledTriplet)
-        .filter(labelizer.triplets.models.LabeledTriplet.id == triplet_id)
+        db.query(labelizer.triplets.models.Triplet)
+        .filter(labelizer.triplets.models.Triplet.id == triplet_id)
         .first()
     )
     if triplet is None:
@@ -207,16 +208,16 @@ def set_validation_triplet_label(
 
 
 # We only retrieve the triplets that have been labeled
-def get_all_triplets(db: Session) -> list[dict]:
+def get_triplets(db: Session) -> list[dict]:
     return [
         triplet.to_dict()
-        for triplet in db.query(labelizer.triplets.models.LabeledTriplet)
-        .filter(labelizer.triplets.models.LabeledTriplet.label.isnot(None))
+        for triplet in db.query(labelizer.triplets.models.Triplet)
+        .filter(labelizer.triplets.models.Triplet.label.isnot(None))
         .all()
     ]
 
 
-def get_all_validation_triplets(db: Session) -> list[dict]:
+def get_validation_triplets(db: Session) -> list[dict]:
     return [
         triplet.to_dict()
         for triplet in db.query(labelizer.triplets.models.ValidationTriplet)
@@ -225,11 +226,11 @@ def get_all_validation_triplets(db: Session) -> list[dict]:
     ]
 
 
-def delete_all_triplets(db: Session) -> None:
-    db.query(labelizer.triplets.models.LabeledTriplet).delete()
+def delete_triplets(db: Session) -> None:
+    db.query(labelizer.triplets.models.Triplet).delete()
     db.commit()
 
 
-def delete_all_validation_triplets(db: Session) -> None:
+def delete_validation_triplets(db: Session) -> None:
     db.query(labelizer.triplets.models.ValidationTriplet).delete()
     db.commit()

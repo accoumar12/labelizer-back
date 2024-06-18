@@ -19,7 +19,7 @@ def load_triplets(data_path: Path) -> pd.DataFrame:
         return pd.DataFrame()
 
 
-def extract_triplet_ids(triplets: pd.DataFrame) -> set[str]:
+def extract_triplets_ids(triplets: pd.DataFrame) -> set[str]:
     """Extract a set of triplet IDs from a DataFrame."""
     return set(
         triplets[["reference_id", "left_id", "right_id"]].to_numpy().flatten(),

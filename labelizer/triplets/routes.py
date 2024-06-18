@@ -18,8 +18,8 @@ from labelizer.core.database.get_database import get_db
 from labelizer.triplets import crud, schemas
 from labelizer.triplets.enums import SelectedItemType
 from labelizer.triplets.flows import (
-    get_all_triplets_csv_stream,
-    get_all_validation_triplets_csv_stream,
+    get_triplets_csv_stream,
+    get_validation_triplets_csv_stream,
 )
 
 router = APIRouter(tags=["Triplets"])
@@ -143,11 +143,11 @@ async def download_db(
 ) -> FileResponse:
     now = time.strftime("%Y%m%d-%H%M")
     if validation:
-        stream = get_all_validation_triplets_csv_stream(db)
+        stream = get_validation_triplets_csv_stream(db)
         filename = f"{now}_labelizer_validation_db.csv"
         logger.info("Validation database downloaded.")
     else:
-        stream = get_all_triplets_csv_stream(db)
+        stream = get_triplets_csv_stream(db)
         filename = f"{now}_labelizer_db.csv"
         logger.info("Database downloaded.")
     return Response(
@@ -167,27 +167,16 @@ async def delete_db(
     validation: bool = False,
     db: Session = Depends(get_db),
 ) -> JSONResponse:
-    crud.delete_all_validation_triplets(db) if validation else crud.delete_all_triplets(
+    crud.delete_validation_triplets(db) if validation else crud.delete_triplets(
         db,
     )
     if validation:
-        crud.delete_all_validation_triplets(db)
+        crud.delete_validation_triplets(db)
         logger.info("Validation database deleted.")
     else:
-        crud.delete_all_triplets(db)
+        crud.delete_triplets(db)
         logger.info("Database deleted.")
     return JSONResponse(
         content={"message": "Database deleted successfully."},
         status_code=status.HTTP_200_OK,
     )
-
-
-@router.get(
-    "/upload_data",
-    summary="Get the status of the last triplets data upload.",
-)
-async def get_upload_status(
-    user: AdminUserSession,
-    db: Session = Depends(get_db),
-) -> schemas.TripletsUploadStatus:
-    return crud.get_upload_status(db)

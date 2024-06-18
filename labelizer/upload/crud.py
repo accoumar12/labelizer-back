@@ -1,15 +1,15 @@
 from sqlalchemy.orm import Session
 
-import labelizer.triplets.models
+from labelizer.upload import models, schemas
 
 
 def create_upload_status(
     db: Session,
     to_upload_triplets_count: int,
-) -> labelizer.triplets.models.TripletUploadStatus:
-    db_status = labelizer.triplets.models.TripletUploadStatus(
-        to_upload_triplets_count=to_upload_triplets_count,
-        uploaded_triplets_count=0,
+) -> models.AllTripletsUploadStatus:
+    db_status = models.AllTripletsUploadStatus(
+        to_upload_all_triplets_count=to_upload_triplets_count,
+        uploaded_all_triplets_count=0,
     )
     db.add(db_status)
     db.commit()
@@ -19,17 +19,17 @@ def create_upload_status(
 
 def get_upload_status(
     db: Session,
-) -> labelizer.triplets.models.TripletUploadStatus:
+) -> models.AllTripletsUploadStatus:
     upload_status = (
-        db.query(labelizer.triplets.models.TripletUploadStatus)
-        .order_by(labelizer.triplets.models.TripletUploadStatus.id.desc())
+        db.query(models.AllTripletsUploadStatus)
+        .order_by(models.AllTripletsUploadStatus.id.desc())
         .first()
     )
     if upload_status is None:
         # Return a default TripletUploadStatus object when there is no record in the database, because we experienced a bug when no data was uploaded yet
-        return labelizer.triplets.models.TripletUploadStatus(
+        return schemas.AllTripletsUploadStatus(
             id=0,
-            to_upload_triplets_count=0,
-            uploaded_triplets_count=0,
+            to_upload_all_triplets_count=0,
+            uploaded_all_triplets_count=0,
         )
     return upload_status
