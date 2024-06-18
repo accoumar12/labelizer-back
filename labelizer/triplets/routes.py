@@ -113,20 +113,11 @@ async def set_triplet_label(
     status_code=status.HTTP_200_OK,
     response_model=schemas.TripletStats,
 )
-async def get_triplet_stats(
+async def get_triplet_stats_endpoint(
     user: UserSession,
     db: Session = Depends(get_db),
 ) -> schemas.TripletStats:
-    labeled_count = crud.count_labeled_triplets(db)
-    unlabeled_count = crud.count_unlabeled_triplets(db)
-    validation_labeled_count = crud.count_labeled_validation_triplets(db)
-    validation_unlabeled_count = crud.count_unlabeled_validation_triplets(db)
-    return schemas.TripletStats(
-        labeled=labeled_count,
-        unlabeled=unlabeled_count,
-        validation_labeled=validation_labeled_count,
-        validation_unlabeled=validation_unlabeled_count,
-    )
+    return crud.get_triplets_stats(db)
 
 
 # We choose to upload both the triplets and validation triplets at once and not separately because we can easily define a format for the zipped folder

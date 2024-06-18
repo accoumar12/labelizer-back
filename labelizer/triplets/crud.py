@@ -4,10 +4,13 @@ import datetime
 import logging
 from typing import TYPE_CHECKING
 
+from sqlalchemy.orm import Session
+
 import labelizer.triplets.models
 import labelizer.triplets.schemas
 import labelizer.upload.models
 from labelizer.config.app_config import app_config
+from labelizer.triplets import crud, schemas
 from labelizer.triplets.enums import SelectedItemType
 
 if TYPE_CHECKING:
@@ -234,3 +237,16 @@ def delete_triplets(db: Session) -> None:
 def delete_validation_triplets(db: Session) -> None:
     db.query(labelizer.triplets.models.ValidationTriplet).delete()
     db.commit()
+
+
+def get_triplets_stats(db: Session) -> schemas.TripletStats:
+    labeled_count = crud.count_labeled_triplets(db)
+    unlabeled_count = crud.count_unlabeled_triplets(db)
+    validation_labeled_count = crud.count_labeled_validation_triplets(db)
+    validation_unlabeled_count = crud.count_unlabeled_validation_triplets(db)
+    return schemas.TripletStats(
+        labeled=labeled_count,
+        unlabeled=unlabeled_count,
+        validation_labeled=validation_labeled_count,
+        validation_unlabeled=validation_unlabeled_count,
+    )
