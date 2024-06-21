@@ -17,18 +17,24 @@ class TripletBase(BaseModel):
         from_attributes = True
 
 
-class LabelizerTripletResponse(TripletBase):
+class TripletResponse(TripletBase):
     id: int
     reference_length: float
+    reference_scope: str
     left_length: float
+    left_scope: str
     right_length: float
+    right_scope: str
 
 
-class LabelizerValidationTripletResponse(TripletBase):
+class ValidationTripletResponse(TripletBase):
     id: int
     reference_length: float
+    reference_scope: str
     left_length: float
+    left_scope: str
     right_length: float
+    right_scope: str
     left_encoder_id: str
     right_encoder_id: str
 

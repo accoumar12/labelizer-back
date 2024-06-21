@@ -2,7 +2,7 @@
 
 ## Architecture
 
-Architecture choices inspired by the FastAPI tutorial: <https://fastapi.tiangolo.com/tutorial/sql-databases/>
+Architecture choices inspired by [this FastAPI tutorial](<https://fastapi.tiangolo.com/tutorial/sql-databases/>), [Netflix Dispatch project](https://github.com/Netflix/dispatch).
 
 ## Triplets
 

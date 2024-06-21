@@ -31,14 +31,13 @@ logger = logging.getLogger()
     "/triplet",
     summary="Get the triplet for the user of the app.",
     status_code=status.HTTP_200_OK,
-    response_model=schemas.LabelizerTripletResponse
-    | schemas.LabelizerValidationTripletResponse,
+    response_model=schemas.TripletResponse | schemas.ValidationTripletResponse,
 )
 async def get_triplet(
     user: UserSession,
     validation: bool = False,
     db: Session = Depends(get_db),
-) -> schemas.LabelizerTripletResponse | schemas.LabelizerValidationTripletResponse:
+) -> schemas.TripletResponse | schemas.ValidationTripletResponse:
     if validation:
         triplet = crud.get_first_unlabeled_validation_triplet(db)
     else:
@@ -52,26 +51,32 @@ async def get_triplet(
         )
     if validation:
         logger.info("Validation Triplet %s retrieved.", triplet.id)
-        return schemas.LabelizerValidationTripletResponse(
+        return schemas.ValidationTripletResponse(
             id=triplet.id,
             reference_id=triplet.reference_id,
             reference_length=triplet.reference_item.length,
+            reference_scope=triplet.reference_item.scope,
             left_id=triplet.left_id,
             left_length=triplet.left_item.length,
+            left_scope=triplet.left_item.scope,
             left_encoder_id=triplet.left_encoder_id,
             right_id=triplet.right_id,
             right_length=triplet.right_item.length,
+            right_scope=triplet.right_item.scope,
             right_encoder_id=triplet.right_encoder_id,
         )
     logger.info("Triplet %s retrieved.", triplet.id)
-    return schemas.LabelizerTripletResponse(
+    return schemas.TripletResponse(
         id=triplet.id,
         reference_id=triplet.reference_id,
         reference_length=triplet.reference_item.length,
+        reference_scope=triplet.reference_item.scope,
         left_id=triplet.left_id,
         left_length=triplet.left_item.length,
+        left_scope=triplet.left_item.scope,
         right_id=triplet.right_id,
         right_length=triplet.right_item.length,
+        right_scope=triplet.right_item.scope,
     )
 
 
