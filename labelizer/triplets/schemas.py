@@ -13,6 +13,7 @@ class TripletBase(BaseModel):
     left_id: str
     right_id: str
 
+    # Useful for the ORM https://docs.pydantic.dev/latest/concepts/models/#arbitrary-class-instances
     class Config:
         from_attributes = True
 
