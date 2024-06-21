@@ -7,4 +7,4 @@ class Item(BaseModel):
     id: str
     length: float
     scope: str
-    vector: list[float]
+    # vector: list[float]
