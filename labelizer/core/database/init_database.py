@@ -1,21 +1,23 @@
 import logging
 
-from sqlalchemy import create_engine
+from sqlalchemy import MetaData, create_engine, text
 from sqlalchemy.orm import declarative_base, sessionmaker
 
-from labelizer.config.app_config import AppConfig
-
-app_config = AppConfig()
-
-SQLALCHEMY_DATABASE_URL = app_config.db_url
+from labelizer.config.app_config import app_config
 
 # For this logger, we have to specify the config otherwise we do not see anything logged
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+SQL_ALCHEMY_DATABASE_URL = f"postgresql://{app_config.db_user}:{app_config.db_password}@{app_config.db_host}:{app_config.db_port}/{app_config.db_name}"
 engine = create_engine(
-    SQLALCHEMY_DATABASE_URL,
+    SQL_ALCHEMY_DATABASE_URL,
 )
+
+with engine.connect() as connection:
+    connection.execute(text(f"CREATE SCHEMA IF NOT EXISTS {app_config.db_schema};"))
+    connection.commit()
+    logger.info("Schema %s created", app_config.db_schema)
 
 # with engine.connect() as conn:
 #     result = conn.execute(
@@ -32,4 +34,5 @@ engine = create_engine(
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
-Base = declarative_base()
+# We refer to https://docs.sqlalchemy.org/en/14/orm/declarative_tables.html#explicit-schema-name-with-declarative-table for specifying the schema name
+Base = declarative_base(metadata=MetaData(schema=app_config.db_schema))

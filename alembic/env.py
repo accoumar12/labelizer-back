@@ -59,7 +59,7 @@ def run_migrations_online() -> None:
     """
     # We retrieve the database URL from the environment variables here, as suggested by https://github.com/sqlalchemy/alembic/discussions/1149
     configuration = config.get_section(config.config_ini_section)
-    configuration["sqlalchemy.url"] = os.environ["DB_URL"]
+    configuration["sqlalchemy.url"] = os.environ["pg_url"]
 
     connectable = engine_from_config(
         configuration,
