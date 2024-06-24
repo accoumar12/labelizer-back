@@ -1,8 +1,8 @@
 import logging
 
-from sqlalchemy import MetaData, create_engine, text
+from sqlalchemy import MetaData, create_engine
 from sqlalchemy.orm import declarative_base, sessionmaker
-from sqlalchemy_utils import create_database, database_exists
+from sqlalchemy_utils import database_exists
 
 from labelizer.config.app_config import app_config
 
@@ -15,17 +15,11 @@ SQL_ALCHEMY_DB_URL = app_config.db_url
 
 engine = create_engine(SQL_ALCHEMY_DB_URL)
 
-if not database_exists(SQL_ALCHEMY_DB_URL):
-    logger.info("Database %s does not exist", app_config.db_url)
-    create_database(SQL_ALCHEMY_DB_URL)
-    logger.info("Database %s created", app_config.db_url)
-else:  # pragma: no cover
-    logger.info("Database %s already exists", app_config.db_url)
 
-with engine.connect() as connection:
-    connection.execute(text(f"CREATE SCHEMA IF NOT EXISTS {app_config.db_schema};"))
-    connection.commit()
-    logger.info("Schema %s present", app_config.db_schema)
+# We move the creation of the database to other scripts
+if not database_exists(SQL_ALCHEMY_DB_URL):
+    msg = f"Database {app_config.db_name} does not exist"
+    raise Exception(msg)
 
 # with engine.connect() as conn:
 #     result = conn.execute(
