@@ -17,6 +17,8 @@ if not database_exists(SQL_ALCHEMY_DB_URL):
     logger.info("Database %s does not exist", app_config.db_url)
     create_database(SQL_ALCHEMY_DB_URL)
     logger.info("Database %s created", app_config.db_url)
+else:  # pragma: no cover
+    logger.info("Database %s already exists", app_config.db_url)
 
 with engine.connect() as connection:
     connection.execute(text(f"CREATE SCHEMA IF NOT EXISTS {app_config.db_schema};"))
