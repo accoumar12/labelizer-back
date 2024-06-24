@@ -9,9 +9,8 @@ from labelizer.config.app_config import app_config
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-SQL_ALCHEMY_DATABASE_URL = f"postgresql://{app_config.db_user}:{app_config.db_password}@{app_config.db_host}:{app_config.db_port}/{app_config.db_name}"
 engine = create_engine(
-    SQL_ALCHEMY_DATABASE_URL,
+    app_config.db_url,
 )
 
 with engine.connect() as connection:
