@@ -2,6 +2,7 @@ import logging
 
 from sqlalchemy import MetaData, create_engine, text
 from sqlalchemy.orm import declarative_base, sessionmaker
+from sqlalchemy_utils import create_database, database_exists
 
 from labelizer.config.app_config import app_config
 
@@ -9,9 +10,13 @@ from labelizer.config.app_config import app_config
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-engine = create_engine(
-    app_config.db_url,
-)
+
+SQL_ALCHEMY_DB_URL = app_config.db_url
+engine = create_engine(SQL_ALCHEMY_DB_URL)
+if not database_exists(SQL_ALCHEMY_DB_URL):
+    logger.info("Database %s does not exist", app_config.db_url)
+    create_database(SQL_ALCHEMY_DB_URL)
+    logger.info("Database %s created", app_config.db_url)
 
 with engine.connect() as connection:
     connection.execute(text(f"CREATE SCHEMA IF NOT EXISTS {app_config.db_schema};"))
