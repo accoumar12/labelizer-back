@@ -12,9 +12,28 @@ services:
     environment:
       ROOT_PATH: /app/data
       DEV_MOD: 1
+      DB_HOST: localhost
+      DB_PORT: 5432
+      DB_NAME: labelizer
+      DB_SCHEMA: labelizer
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+
     volumes:
       - workspace-data:/app/data
 
+  postgres:
+    image: postgres:16.2
+    restart: always
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    ports:
+      - "5452:5432"
+    volumes:
+      - ./docker/initdb_scripts:/docker-entrypoint-initdb.d
+      - pgdata:/var/lib/postgresql/data
 
 volumes:
   workspace-data:
+  pgdata:
