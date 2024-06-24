@@ -10,7 +10,7 @@ services:
     ports:
       - 42042:42042
     environment:
-      ROOT_PATH: /app/data
+      WORKSPACE_DIR: /app/data
       DEV_MOD: 1
       DB_HOST: postgres
       DB_PORT: 5432

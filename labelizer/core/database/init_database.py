@@ -16,7 +16,7 @@ engine = create_engine(
 with engine.connect() as connection:
     connection.execute(text(f"CREATE SCHEMA IF NOT EXISTS {app_config.db_schema};"))
     connection.commit()
-    logger.info("Schema %s created", app_config.db_schema)
+    logger.info("Schema %s present", app_config.db_schema)
 
 # with engine.connect() as conn:
 #     result = conn.execute(
