@@ -12,7 +12,9 @@ logger = logging.getLogger(__name__)
 
 
 SQL_ALCHEMY_DB_URL = app_config.db_url
+
 engine = create_engine(SQL_ALCHEMY_DB_URL)
+
 if not database_exists(SQL_ALCHEMY_DB_URL):
     logger.info("Database %s does not exist", app_config.db_url)
     create_database(SQL_ALCHEMY_DB_URL)
