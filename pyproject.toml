@@ -18,7 +18,6 @@ psycopg2-binary = "^2.9.9"
 pgvector = "^0.2.5"
 alembic = "^1.13.1"
 python-dotenv = "^1.0.1"
-sqlalchemy-utils = "^0.41.2"
 
 
 [build-system]
