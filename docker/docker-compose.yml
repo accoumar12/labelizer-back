@@ -18,6 +18,8 @@ services:
       DB_SCHEMA: labelizer
       DB_USER: postgres
       DB_PASSWORD: postgres
+    depends_on:
+      - postgres
 
     volumes:
       - workspace-data:/app/data
