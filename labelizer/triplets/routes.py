@@ -55,14 +55,14 @@ async def get_triplet(
             id=triplet.id,
             reference_id=triplet.reference_id,
             reference_length=triplet.reference_item.length,
-            reference_scope=triplet.reference_item.scope,
+            reference_dataset=triplet.reference_item.dataset,
             left_id=triplet.left_id,
             left_length=triplet.left_item.length,
-            left_scope=triplet.left_item.scope,
+            left_dataset=triplet.left_item.dataset,
             left_encoder_id=triplet.left_encoder_id,
             right_id=triplet.right_id,
             right_length=triplet.right_item.length,
-            right_scope=triplet.right_item.scope,
+            right_dataset=triplet.right_item.dataset,
             right_encoder_id=triplet.right_encoder_id,
         )
     logger.info("Triplet %s retrieved.", triplet.id)
@@ -70,13 +70,13 @@ async def get_triplet(
         id=triplet.id,
         reference_id=triplet.reference_id,
         reference_length=triplet.reference_item.length,
-        reference_scope=triplet.reference_item.scope,
+        reference_dataset=triplet.reference_item.dataset,
         left_id=triplet.left_id,
         left_length=triplet.left_item.length,
-        left_scope=triplet.left_item.scope,
+        left_dataset=triplet.left_item.dataset,
         right_id=triplet.right_id,
         right_length=triplet.right_item.length,
-        right_scope=triplet.right_item.scope,
+        right_dataset=triplet.right_item.dataset,
     )
 
 

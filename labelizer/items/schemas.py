@@ -6,5 +6,5 @@ from pydantic import BaseModel
 class Item(BaseModel):
     id: str
     length: float
-    scope: str
+    dataset: str
     # vector: list[float]

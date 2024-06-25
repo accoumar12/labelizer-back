@@ -21,21 +21,21 @@ class TripletBase(BaseModel):
 class TripletResponse(TripletBase):
     id: int
     reference_length: float
-    reference_scope: str
+    reference_dataset: str
     left_length: float
-    left_scope: str
+    left_dataset: str
     right_length: float
-    right_scope: str
+    right_dataset: str
 
 
 class ValidationTripletResponse(TripletBase):
     id: int
     reference_length: float
-    reference_scope: str
+    reference_dataset: str
     left_length: float
-    left_scope: str
+    left_dataset: str
     right_length: float
-    right_scope: str
+    right_dataset: str
     left_encoder_id: str
     right_encoder_id: str
 

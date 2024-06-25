@@ -8,13 +8,13 @@ from labelizer.core.api.fast_api_app import app
 from labelizer.core.database.core import engine
 
 
-@pytest.fixture(scope="session", autouse=True)
+@pytest.fixture(dataset="session", autouse=True)
 def db() -> Generator[Session, None, None]:
     with Session(engine) as session:
         yield session
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(dataset="module")
 def client() -> Generator[TestClient, None, None]:
     with TestClient(app) as client:
         yield client

@@ -1,3 +1,3 @@
-from sqlalchemy.orm import scoped_session, sessionmaker
+from sqlalchemy.orm import datasetd_session, sessionmaker
 
-Session = scoped_session(sessionmaker())
+Session = datasetd_session(sessionmaker())
