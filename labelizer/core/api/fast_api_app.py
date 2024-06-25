@@ -24,7 +24,7 @@ def setup_app() -> FastAPI:
     """Initialize fastapi app."""
     setup_logging(logging.DEBUG)
 
-    init_database()
+    init_database(engine)
 
     Base.metadata.create_all(bind=engine)
 

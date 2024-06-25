@@ -1,5 +1,6 @@
 import logging
 
+from sqlalchemy import text
 from sqlalchemy_utils import database_exists
 
 from labelizer.config.app_config import app_config
@@ -8,12 +9,24 @@ from labelizer.core.database.core import SessionLocal
 logger = logging.getLogger()
 
 
-def init_database() -> None:
-    # We move the creation of the database to other scripts
+def init_database(engine) -> None:
     if not database_exists(app_config.db_url):
         msg = f"Database {app_config.db_name} does not exist"
         raise Exception(msg)
     logger.info("Database %s exists", app_config.db_name)
+
+    with engine.connect() as connection:
+        result = connection.execute(
+            text(
+                f"SELECT schema_name FROM information_schema.schemata WHERE schema_name = '{app_config.db_schema}';",
+            ),
+        )
+        schema_name = result.scalar()
+        if schema_name == app_config.db_schema:
+            logger.info("Schema %s exists", app_config.db_schema)
+        else:
+            msg = f"Schema {app_config.db_schema} does not exist"
+            raise Exception(msg)
 
 
 def get_db() -> SessionLocal:
