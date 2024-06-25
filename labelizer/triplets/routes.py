@@ -14,7 +14,7 @@ from sqlalchemy.orm import Session
 from starlette.responses import FileResponse
 
 from labelizer.core.api.auth.core import AdminUserSession, UserSession
-from labelizer.core.database.get_database import get_db
+from labelizer.core.database.manage import get_db
 from labelizer.triplets import crud, schemas
 from labelizer.triplets.enums import SelectedItemType
 from labelizer.triplets.flows import (

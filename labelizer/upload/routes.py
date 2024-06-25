@@ -6,7 +6,7 @@ from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 
 from labelizer.core.api.auth.core import AdminUserSession
-from labelizer.core.database.get_database import get_db
+from labelizer.core.database.manage import get_db
 from labelizer.upload import crud, schemas
 from labelizer.upload.flows import upload_data
 

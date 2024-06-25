@@ -2,7 +2,7 @@ from sqlalchemy import Column, DateTime, Enum, ForeignKey, Integer, String
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import relationship
 
-from labelizer.core.database.init_database import Base
+from labelizer.core.database.core import Base
 from labelizer.triplets.enums import SelectedItemType
 
 

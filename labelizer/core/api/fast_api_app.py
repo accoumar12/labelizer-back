@@ -6,7 +6,8 @@ from labelizer import APP_VERSION
 from labelizer.config.routes import router as config_router
 from labelizer.core.api.logging import setup_logging
 from labelizer.core.api.middlewares import RequestContextLogMiddleware
-from labelizer.core.database.init_database import Base, engine
+from labelizer.core.database.core import Base, engine
+from labelizer.core.database.manage import init_database
 from labelizer.images_utils.routes import router as images_router
 from labelizer.similarity.routes import router as similarity_router
 from labelizer.triplets.routes import router as triplets_router
@@ -21,6 +22,10 @@ ROOT_PATH = "/api/labelizer/v1"
 
 def setup_app() -> FastAPI:
     """Initialize fastapi app."""
+    setup_logging(logging.DEBUG)
+
+    init_database()
+
     Base.metadata.create_all(bind=engine)
 
     _app = FastAPI(
@@ -36,8 +41,6 @@ def setup_app() -> FastAPI:
     )
 
     _app.add_middleware(RequestContextLogMiddleware)
-
-    setup_logging(logging.DEBUG)
 
     routers = [
         config_router,

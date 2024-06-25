@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Integer
 
-from labelizer.core.database.init_database import Base
+from labelizer.core.database.core import Base
 
 
 class AllTripletsUploadStatus(Base):

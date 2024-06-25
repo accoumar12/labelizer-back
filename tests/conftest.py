@@ -5,7 +5,7 @@ from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
 from labelizer.core.api.fast_api_app import app
-from labelizer.core.database.init_database import engine
+from labelizer.core.database.core import engine
 
 
 @pytest.fixture(scope="session", autouse=True)

@@ -10,7 +10,7 @@ from sqlalchemy.orm import Session
 
 import labelizer.upload.crud
 from labelizer.config.app_config import app_config
-from labelizer.core.database.get_database import get_db
+from labelizer.core.database.manage import get_db
 from labelizer.items.crud import create_items
 from labelizer.items.utils import load_items
 from labelizer.triplets.crud import create_triplets, create_validation_triplets

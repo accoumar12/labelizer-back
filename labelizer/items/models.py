@@ -1,7 +1,7 @@
 from sqlalchemy import Column, Float, String
 
 from labelizer.config.app_config import AppConfig
-from labelizer.core.database.init_database import Base
+from labelizer.core.database.core import Base
 
 app_config = AppConfig()
 

@@ -2,7 +2,7 @@ from fastapi import Depends, HTTPException
 from sqlalchemy import select, text
 from sqlalchemy.orm import Session
 
-from labelizer.core.database.get_database import get_db
+from labelizer.core.database.manage import get_db
 from labelizer.items import crud
 from labelizer.items.models import Item
 

@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
-from labelizer.core.database.get_database import get_db
+from labelizer.core.database.manage import get_db
 from labelizer.similarity.flows import compute_similarity_score, get_nearest_neighbors
 
 router = APIRouter(tags=["Similarity"])

@@ -4,7 +4,7 @@ from logging.config import fileConfig
 from sqlalchemy import engine_from_config, pool
 
 from alembic import context
-from labelizer.core.database.init_database import Base
+from labelizer.core.database.core import Base
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
