@@ -24,9 +24,9 @@ class AppConfig:
         db_password = os.environ["DB_PASSWORD"]
         db_host = os.environ["DB_HOST"]
         db_port = os.environ["DB_PORT"]
-        db_name = os.environ["DB_NAME"]
+        self.db_name = os.environ["DB_NAME"]
         self.db_url = (
-            f"postgresql://{db_user}:{db_password}@{db_host}:{db_port}/{db_name}"
+            f"postgresql://{db_user}:{db_password}@{db_host}:{db_port}/{self.db_name}"
         )
         self.db_schema = os.environ["DB_SCHEMA"]
 
