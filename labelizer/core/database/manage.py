@@ -10,7 +10,7 @@ logger = logging.getLogger()
 
 def init_database(engine) -> None:
     with engine.connect() as connection:
-        # First check if the db exists
+        # We have moved the creation of the database and schema to separate scripts
         result = connection.execute(
             text(
                 f"SELECT datname FROM pg_database WHERE datname = '{app_config.db_name}';",
@@ -18,7 +18,7 @@ def init_database(engine) -> None:
         )
         db_name = result.scalar()
         if db_name == app_config.db_name:
-            logger.info("Database %s exists", app_config.db_name)
+            logger.info("Database %s used", app_config.db_name)
         else:
             msg = f"Database {app_config.db_name} does not exist"
             raise Exception(msg)
@@ -29,7 +29,7 @@ def init_database(engine) -> None:
         )
         schema_name = result.scalar()
         if schema_name == app_config.db_schema:
-            logger.info("Schema %s exists", app_config.db_schema)
+            logger.info("Schema %s used", app_config.db_schema)
         else:
             msg = f"Schema {app_config.db_schema} does not exist"
             raise Exception(msg)

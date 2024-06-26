@@ -78,5 +78,5 @@ app = setup_app()
 
 
 @app.get("/")
-def root():
+def root() -> dict:
     return {"message": f"documentation is located at {ROOT_PATH}/docs"}
