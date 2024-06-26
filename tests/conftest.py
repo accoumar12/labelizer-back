@@ -2,8 +2,8 @@ from collections.abc import Generator
 
 import pytest
 from fastapi.testclient import TestClient
-from labelizer.core.api.fast_api_app import app
-from labelizer.core.database.core import engine
+from backend.core.api.fast_api_app import app
+from backend.core.database.core import engine
 from sqlalchemy.orm import Session
 
 

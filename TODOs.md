@@ -14,4 +14,4 @@
 
 - gestion des droits pour déployer
 - gestion du login
-- Changer le now de labelizer
+- Changer le now de backend

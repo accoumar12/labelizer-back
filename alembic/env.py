@@ -1,7 +1,7 @@
 import os
 from logging.config import fileConfig
 
-from labelizer.core.database.core import Base
+from backend.core.database.core import Base
 from sqlalchemy import engine_from_config, pool
 
 from alembic import context
