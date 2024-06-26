@@ -1,4 +1,4 @@
-from labelizer.items import crud
+from src.items import crud
 
 
 def test_get_item(session, item):

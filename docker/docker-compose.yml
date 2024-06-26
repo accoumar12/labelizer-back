@@ -5,7 +5,7 @@ services:
       context: ..
       dockerfile: docker/Dockerfile
       target: production
-    command: gunicorn --workers 3 --worker-class uvicorn.workers.UvicornWorker --bind 0.0.0.0:42042 labelizer.core.api.fast_api_app:app
+    command: gunicorn --workers 3 --worker-class uvicorn.workers.UvicornWorker --bind 0.0.0.0:42042 src.core.api.fast_api_app:app
     ports:
       - 42042:42042
     environment:

@@ -17,8 +17,8 @@ COPY --from=requirements-stage /tmp/requirements.txt /app/requirements.txt
 
 RUN pip install --no-cache-dir --upgrade -r /app/requirements.txt
 
-COPY  ../labelizer ./labelizer
+COPY  ../src ./src
 
 EXPOSE 42042
-CMD ["gunicorn", "--workers", "4", "--worker-class", "uvicorn.workers.UvicornWorker", "--bind", "0.0.0.0:42042", "labelizer.core.api.fast_api_app:app"]
+CMD ["gunicorn", "--workers", "4", "--worker-class", "uvicorn.workers.UvicornWorker", "--bind", "0.0.0.0:42042", "src.core.api.fast_api_app:app"]
 

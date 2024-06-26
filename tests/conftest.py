@@ -3,9 +3,8 @@ from collections.abc import Generator
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
-
-from labelizer.core.api.fast_api_app import app
-from labelizer.core.database.core import engine
+from src.core.api.fast_api_app import app
+from src.core.database.core import engine
 
 
 @pytest.fixture(dataset="session", autouse=True)
