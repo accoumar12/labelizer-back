@@ -2,7 +2,7 @@ import uvicorn
 
 if __name__ == "__main__":
     config = uvicorn.Config(
-        "src.core.api.fast_api_app:app",
+        "labelizer.core.api.fast_api_app:app",
         port=42042,
         workers=5,
     )
