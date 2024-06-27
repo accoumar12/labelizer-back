@@ -45,6 +45,7 @@ def init_db(engine) -> None:
             raise Exception(msg)
 
         Base.metadata.create_all(bind=engine)
+        print(0)
 
 
 def get_db() -> SessionLocal:

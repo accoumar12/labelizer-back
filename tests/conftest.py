@@ -15,7 +15,7 @@ Session = scoped_session(sessionmaker())
 engine = create_engine(app_config.db_url)
 
 
-@pytest.fixture(scope="session", autouse=True)
+@pytest.fixture(scope="session")
 def db():
     delete_all_tables(engine)
     init_db(engine)

@@ -1,8 +1,9 @@
-from backend.core.database.core import Base
-from backend.triplets.enums import SelectedItemType
 from sqlalchemy import Column, DateTime, Enum, ForeignKey, Integer, String
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import relationship
+
+from backend.core.database.core import Base
+from backend.triplets.enums import SelectedItemType
 
 
 class TripletBase(Base):
