@@ -5,17 +5,17 @@ from starlette.config import environ
 environ["DB_NAME"] = "labelizer_test"
 environ["DB_SCHEMA"] = "labelizer_test"
 
-from backend.core.database.manage import delete_all_tables, init_db
+from backend.core.database.manage import create_all_tables, drop_all_tables
 from tests.database import Session, engine
 from tests.factories import test_item
 
 
 @pytest.fixture(scope="session")
 def db():
-    delete_all_tables(engine)
-    init_db(engine)
+    drop_all_tables(engine)
+    create_all_tables(engine)
     yield
-    delete_all_tables(engine)
+    drop_all_tables(engine)
 
 
 @pytest.fixture(scope="function", autouse=True)
@@ -28,4 +28,6 @@ def session(db):
 
 @pytest.fixture()
 def item(session):
+    session.add(test_item)
+    session.commit()
     return test_item
