@@ -3,5 +3,5 @@ from sqlalchemy.orm import sessionmaker
 
 from backend.config.app_config import app_config
 
-engine = create_engine(app_config.db_url)
-Session = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+test_engine = create_engine(app_config.db_url)
+TestSession = sessionmaker(autocommit=False, autoflush=False, bind=test_engine)

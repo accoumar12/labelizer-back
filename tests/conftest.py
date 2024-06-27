@@ -6,21 +6,22 @@ environ["DB_NAME"] = "labelizer_test"
 environ["DB_SCHEMA"] = "labelizer_test"
 
 from backend.core.database.manage import create_all_tables, drop_all_tables
-from tests.database import Session, engine
+from tests.database import TestSession, test_engine
 from tests.test_data import test_item, test_triplet, test_validation_triplet
 
 
 @pytest.fixture(scope="session")
 def db():
-    drop_all_tables(engine)
-    create_all_tables(engine)
+    drop_all_tables(test_engine)
+    create_all_tables(test_engine)
     yield
-    drop_all_tables(engine)
+    drop_all_tables(test_engine)
 
 
-@pytest.fixture(scope="function", autouse=True)
+# The autouse parameter makes the fixture run for every test function
+@pytest.fixture(autouse=True)
 def session(db):
-    session = Session()
+    session = TestSession()
     session.begin_nested()
     yield session
     session.rollback()
