@@ -1,6 +1,7 @@
-from backend.config.app_config import app_config
 from sqlalchemy import MetaData, create_engine
 from sqlalchemy.orm import declarative_base, sessionmaker
+
+from backend.config.app_config import app_config
 
 engine = create_engine(app_config.db_url)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)

@@ -1,8 +1,6 @@
-from backend.config.app_config import AppConfig
-from backend.core.database.core import Base
 from sqlalchemy import Column, Float, String
 
-app_config = AppConfig()
+from backend.core.database.core import Base
 
 
 class Item(Base):

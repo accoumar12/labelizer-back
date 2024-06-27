@@ -1,13 +1,24 @@
 import logging
 
-from backend.config.app_config import app_config
-from backend.core.database.core import SessionLocal
 from sqlalchemy import text
+
+from backend.config.app_config import app_config
+from backend.core.database.core import Base, SessionLocal
 
 logger = logging.getLogger()
 
 
-def init_database(engine) -> None:
+def reset_db(engine) -> None:
+    Base.metadata.drop_all(bind=engine)
+    Base.metadata.create_all(bind=engine)
+    logger.info(
+        "Database %s and schema %s reset",
+        app_config.db_name,
+        app_config.db_schema,
+    )
+
+
+def validate_db_and_schema(engine) -> None:
     with engine.connect() as connection:
         # We have moved the creation of the database and schema to separate scripts
         result = connection.execute(
