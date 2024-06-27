@@ -5,20 +5,20 @@ from sqlalchemy import text
 from backend.config.app_config import app_config
 from backend.core.database.core import Base, SessionLocal
 
+logging.basicConfig(level=logging.INFO)
+
 logger = logging.getLogger()
 
 
-def reset_db(engine) -> None:
-    Base.metadata.drop_all(bind=engine)
-    Base.metadata.create_all(bind=engine)
-    logger.info(
-        "Database %s and schema %s reset",
-        app_config.db_name,
-        app_config.db_schema,
-    )
+def delete_all_tables(engine) -> None:
+    with engine.connect() as connection:
+        for table in Base.metadata.sorted_tables:
+            connection.execute(
+                text(f"DELETE FROM {table.fullname};"),
+            )
 
 
-def validate_db_and_schema(engine) -> None:
+def init_db(engine) -> None:
     with engine.connect() as connection:
         # We have moved the creation of the database and schema to separate scripts
         result = connection.execute(
@@ -43,6 +43,8 @@ def validate_db_and_schema(engine) -> None:
         else:
             msg = f"Schema {app_config.db_schema} does not exist"
             raise Exception(msg)
+
+        Base.metadata.create_all(bind=engine)
 
 
 def get_db() -> SessionLocal:

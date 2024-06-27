@@ -6,8 +6,8 @@ from backend import APP_VERSION
 from backend.config.routes import router as config_router
 from backend.core.api.logging import setup_logging
 from backend.core.api.middlewares import RequestContextLogMiddleware
-from backend.core.database.core import Base, engine
-from backend.core.database.manage import validate_db_and_schema
+from backend.core.database.core import engine
+from backend.core.database.manage import init_db
 from backend.images_utils.routes import router as images_router
 from backend.similarity.routes import router as similarity_router
 from backend.triplets.routes import router as triplets_router
@@ -24,9 +24,7 @@ def setup_app() -> FastAPI:
     """Initialize fastapi app."""
     setup_logging(logging.DEBUG)
 
-    validate_db_and_schema(engine)
-
-    Base.metadata.create_all(bind=engine)
+    init_db(engine)
 
     _app = FastAPI(
         title="backend API",

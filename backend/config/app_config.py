@@ -7,14 +7,10 @@ load_dotenv()
 
 
 class AppConfig:
-    _instance = None
-
-    def __new__(cls, *args, **kwargs) -> "AppConfig":
-        if cls._instance is None:
-            cls._instance = super().__new__(cls, *args, **kwargs)
-        return cls._instance
-
     def __init__(self) -> None:
+        self.setup_config()
+
+    def setup_config(self) -> None:
         workspace_dir = Path(os.environ["WORKSPACE_DIR"])
         self.images_path = workspace_dir / "data" / "images"
 
