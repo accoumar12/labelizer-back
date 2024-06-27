@@ -4,10 +4,12 @@ import logging
 import shutil
 from typing import TYPE_CHECKING
 
-import backend.upload.crud
 import pandas as pd
 from fastapi import Depends
-from backend.config.app_config import app_config
+from sqlalchemy.orm import Session
+
+import backend.upload.crud
+from backend.config.config import config
 from backend.core.database.manage import get_db
 from backend.items.crud import create_items
 from backend.items.utils import load_items
@@ -23,7 +25,6 @@ from backend.utils import (
     get_all_images_ids,
     get_uploaded_images_ids,
 )
-from sqlalchemy.orm import Session
 
 if TYPE_CHECKING:
     import io
@@ -47,9 +48,9 @@ def update_database(
     if not validation_triplets.empty:
         create_validation_triplets(db, validation_triplets)
     uploaded_images = uploaded_images_path.iterdir()
-    app_config.images_path.mkdir(parents=True, exist_ok=True)
+    config.images_path.mkdir(parents=True, exist_ok=True)
     for file in uploaded_images:
-        destination = app_config.images_path / file.name
+        destination = config.images_path / file.name
         shutil.move(file, destination)
     logger.info("Database updated")
 

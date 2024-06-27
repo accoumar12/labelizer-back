@@ -1,9 +1,10 @@
 import logging
 
 from fastapi import APIRouter, status
-from backend.config.app_config import app_config
-from backend.core.api.auth.core import UserSession
 from starlette.responses import FileResponse
+
+from backend.config.config import config
+from backend.core.api.auth.core import UserSession
 
 router = APIRouter(tags=["Images"])
 
@@ -22,4 +23,4 @@ async def get_image(
 ) -> FileResponse:
     suffix = "_canonical" if canonical else ""
     logger.info("Image %s%s retrieved.", image_id, suffix)
-    return FileResponse(f"{app_config.images_path}/{image_id}{suffix}.stp.png")
+    return FileResponse(f"{config.images_path}/{image_id}{suffix}.stp.png")

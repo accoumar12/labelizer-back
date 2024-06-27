@@ -9,7 +9,7 @@ from sqlalchemy.orm import Session
 import backend.triplets.models
 import backend.triplets.schemas
 import backend.upload.models
-from backend.config.app_config import app_config
+from backend.config.config import config
 from backend.triplets import crud, schemas
 from backend.triplets.enums import SelectedItemType
 
@@ -87,7 +87,7 @@ def create_validation_triplets(
 # We make sure two users do not label the same triplet by implementing our own locking mechanism. Not ideal because after the timeout period the triplet will be considered as "unlocked" and could be retrieved by another user.
 def get_first_unlabeled_triplet(
     db: Session,
-    lock_timeout_in_seconds: int = app_config.lock_timeout_in_seconds,
+    lock_timeout_in_seconds: int = config.lock_timeout_in_seconds,
 ) -> backend.triplets.models.Triplet:
     now_time = datetime.datetime.now(datetime.timezone.utc)
     # We define the timeout as the current time minus the lock_timeout_in_seconds, so the boundary, cutoff below which the triplet is considered as "unlocked", "stale"
@@ -114,7 +114,7 @@ def get_first_unlabeled_triplet(
 
 def get_first_unlabeled_validation_triplet(
     db: Session,
-    lock_timeout_in_seconds: int = app_config.lock_timeout_in_seconds,
+    lock_timeout_in_seconds: int = config.lock_timeout_in_seconds,
 ) -> backend.triplets.models.ValidationTriplet:
     now_time = datetime.datetime.now(datetime.timezone.utc)
     cutoff_time = now_time - datetime.timedelta(

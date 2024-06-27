@@ -7,12 +7,12 @@ load_dotenv()
 
 
 # Singleton class to store app configuration, in order to only have one instance of the configuration throughout the app
-class AppConfig:
+class Config:
     _instance = None
 
     def __new__(cls):
         if cls._instance is None:
-            cls._instance = super(AppConfig, cls).__new__(cls)
+            cls._instance = super(Config, cls).__new__(cls)
             cls._instance.setup_config()
         return cls._instance
 
@@ -36,4 +36,4 @@ class AppConfig:
         self.vector_dimension = 1280
 
 
-app_config = AppConfig()
+config = Config()

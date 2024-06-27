@@ -8,7 +8,8 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from fastapi import HTTPException, status
-from backend.config.app_config import app_config
+
+from backend.config.config import config
 
 if TYPE_CHECKING:
     import io
@@ -48,11 +49,11 @@ def get_uploaded_images_ids(uploaded_images_path: Path) -> set[str]:
 
 def get_all_images_ids(uploaded_images_ids: set[str]) -> set[str]:
     # We use lazy evaluation to avoid checking the content of the images folder if it does not exist, then checking if it not empty to then iterate over it
-    if not app_config.images_path.exists() or not any(app_config.images_path.iterdir()):
+    if not config.images_path.exists() or not any(config.images_path.iterdir()):
         return uploaded_images_ids
     return {
         file.name.split(".")[0]
-        for file in app_config.images_path.iterdir()
+        for file in config.images_path.iterdir()
         if not file.name.endswith("_canonical")
     } | uploaded_images_ids
 
