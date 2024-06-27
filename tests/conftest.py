@@ -7,7 +7,7 @@ environ["DB_SCHEMA"] = "labelizer_test"
 
 from backend.core.database.manage import create_all_tables, drop_all_tables
 from tests.database import Session, engine
-from tests.test_data import test_item
+from tests.test_data import test_item, test_triplet, test_validation_triplet
 
 
 @pytest.fixture(scope="session")
@@ -31,3 +31,17 @@ def item(session):
     session.add(test_item)
     session.commit()
     return test_item
+
+
+@pytest.fixture()
+def triplet(session):
+    session.add(test_triplet)
+    session.commit()
+    return test_triplet
+
+
+@pytest.fixture()
+def validation_triplet(session):
+    session.add(test_validation_triplet)
+    session.commit()
+    return test_validation_triplet
