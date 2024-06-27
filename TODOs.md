@@ -3,6 +3,7 @@
 - clarifier les status code etc...
 - add custom exceptions
 - changer delete_db to delete
+- test the singlton pattern
 
 ## Front
 

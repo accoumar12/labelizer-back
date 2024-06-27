@@ -6,9 +6,15 @@ from dotenv import load_dotenv
 load_dotenv()
 
 
+# Singleton class to store app configuration, in order to only have one instance of the configuration throughout the app
 class AppConfig:
-    def __init__(self) -> None:
-        self.setup_config()
+    _instance = None
+
+    def __new__(cls):
+        if cls._instance is None:
+            cls._instance = super(AppConfig, cls).__new__(cls)
+            cls._instance.setup_config()
+        return cls._instance
 
     def setup_config(self) -> None:
         workspace_dir = Path(os.environ["WORKSPACE_DIR"])

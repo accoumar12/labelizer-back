@@ -1,24 +1,21 @@
 import pytest
-from sqlalchemy import create_engine
-from sqlalchemy.orm import scoped_session, sessionmaker
 from starlette.config import environ
 
-environ["DB_NAME"] = "labelizer-test"
-environ["DB_SCHEMA"] = "labelizer-test"
+# Be careful where we modify the environ object, because we want to have the first instance of the config to have these environment variables
+environ["DB_NAME"] = "labelizer_test"
+environ["DB_SCHEMA"] = "labelizer_test"
 
-# Be carefull to import the app_config after the environ variables are set, it should not have been imported before because then the attributes will not be correct
-# Also be careful not to import modules that would instantiate the app_config before the environ variables are set, life manage
-from backend.config.app_config import app_config
 from backend.core.database.manage import delete_all_tables, init_db
-
-Session = scoped_session(sessionmaker())
-engine = create_engine(app_config.db_url)
+from tests.database import Session, engine
+from tests.factories import test_item
 
 
 @pytest.fixture(scope="session")
 def db():
     delete_all_tables(engine)
     init_db(engine)
+    yield
+    delete_all_tables(engine)
 
 
 @pytest.fixture(scope="function", autouse=True)
@@ -27,3 +24,8 @@ def session(db):
     session.begin_nested()
     yield session
     session.rollback()
+
+
+@pytest.fixture()
+def item(session):
+    return test_item

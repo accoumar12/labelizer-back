@@ -14,7 +14,7 @@ def delete_all_tables(engine) -> None:
     with engine.connect() as connection:
         for table in Base.metadata.sorted_tables:
             connection.execute(
-                text(f"DELETE FROM {table.fullname};"),
+                text(f"DROP TABLE IF EXISTS {table.fullname} CASCADE;"),
             )
 
 
@@ -45,7 +45,6 @@ def init_db(engine) -> None:
             raise Exception(msg)
 
         Base.metadata.create_all(bind=engine)
-        print(0)
 
 
 def get_db() -> SessionLocal:
