@@ -7,7 +7,7 @@ environ["DB_SCHEMA"] = "labelizer_test"
 
 from backend.core.database.manage import create_all_tables, drop_all_tables
 from tests.database import Session, engine
-from tests.factories import test_item
+from tests.test_data import test_item
 
 
 @pytest.fixture(scope="session")
