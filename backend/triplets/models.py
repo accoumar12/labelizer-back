@@ -11,9 +11,9 @@ class TripletBase(Base):
     __abstract__ = True
 
     id = Column(Integer, primary_key=True, index=True)
-    reference_id = Column(String, ForeignKey("items.id"), index=True)
-    left_id = Column(String, ForeignKey("items.id"), index=True)
-    right_id = Column(String, ForeignKey("items.id"), index=True)
+    reference_id = Column(String, ForeignKey("item.id"), index=True)
+    left_id = Column(String, ForeignKey("item.id"), index=True)
+    right_id = Column(String, ForeignKey("item.id"), index=True)
     # cf https://github.com/sqlalchemy/sqlalchemy/discussions/10583, we need to explicitly specify the schema for the Enum to be defined for this specific schema
     label = Column(Enum(SelectedItemType, inherit_schema=True), index=True)
     user_id = Column(String, index=True)
