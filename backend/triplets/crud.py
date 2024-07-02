@@ -30,7 +30,7 @@ def increment_all_triplets_upload_status(
         .order_by(backend.upload.models.AllTripletsUploadStatus.id.desc())
         .first()
     )
-    status.uploaded_all_triplets_count += 1
+    status.uploaded_count += 1
     db.commit()
 
 

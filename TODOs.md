@@ -4,6 +4,7 @@
 - add custom exceptions
 - changer delete_db to delete
 - test the singlton pattern
+- move the triplet stuff in another module
 
 ## Front
 
