@@ -39,13 +39,13 @@ class TripletBase(Base):
 
 
 class Triplet(TripletBase):
-    __tablename__ = "triplets"
+    __tablename__ = "triplet"
 
     encoder_id = Column(String, index=True)
 
 
 class ValidationTriplet(TripletBase):
-    __tablename__ = "validation_triplets"
+    __tablename__ = "validation_triplet"
 
     left_encoder_id = Column(String, index=True)
     right_encoder_id = Column(String, index=True)

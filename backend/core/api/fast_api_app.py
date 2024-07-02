@@ -17,7 +17,7 @@ description = """
 backend API.
 """
 
-ROOT_PATH = "/api/backend/v1"
+ROOT_PATH = "/api/labelizer/v1"
 
 
 def setup_app() -> FastAPI:
