@@ -3,11 +3,12 @@ import logging
 
 from fastapi import APIRouter, BackgroundTasks, Depends, File, UploadFile, status
 from fastapi.responses import JSONResponse
+from sqlalchemy.orm import Session
+
 from backend.core.api.auth.core import AdminUserSession
 from backend.core.database.manage import get_db
 from backend.upload import crud, schemas
 from backend.upload.flows import upload_data
-from sqlalchemy.orm import Session
 
 router = APIRouter(tags=["Upload"])
 
@@ -15,7 +16,7 @@ logger = logging.getLogger()
 
 
 @router.post(
-    "/upload_data",
+    "/upload",
     summary="Upload new data, including images and triplets. The data has to be a zipped folder containing a csv file named triplets, a csv file named validation_triplets and a folder named images containing the images. Needs to be authorized as an admin user. If you do not want to include triplets, you can provide a csv file with no line but still the header.",
     status_code=status.HTTP_201_CREATED,
 )
@@ -38,7 +39,7 @@ async def upload_data_in_the_background(
 
 
 @router.get(
-    "/upload_data",
+    "/upload",
     summary="Get the status of the last triplets data upload.",
 )
 async def get_upload_status(

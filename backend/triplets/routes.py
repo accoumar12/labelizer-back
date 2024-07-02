@@ -128,7 +128,7 @@ async def get_triplet_stats_endpoint(
 # We choose to upload both the triplets and validation triplets at once and not separately because we can easily define a format for the zipped folder
 # Use of background tasks, might be replaced with celery if performance or scaling issues arise
 @router.get(
-    "/download_db",
+    "/download",
     summary="Download triplets data in the csv format.",
     status_code=status.HTTP_200_OK,
 )
@@ -154,7 +154,7 @@ async def download_db(
 
 
 @router.delete(
-    "/delete_db",
+    "/delete",
     summary="Delete triplets data inside the database.",
     status_code=status.HTTP_200_OK,
 )

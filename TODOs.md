@@ -7,8 +7,8 @@
 
 ## Front
 
-- Petit détail visuel sur le reload de l onglet validation
 - "Database has beed successfully uploaded" -> No
+- Flicker quand on passe à la vue canonique
 - Besoin de reload pour voir l apparition de la barre
 
 ## Misc
