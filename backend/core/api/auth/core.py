@@ -3,8 +3,9 @@ from typing import Annotated
 
 from fastapi import Depends, Request
 from fastapi.exceptions import HTTPException
-from backend.core.api.auth.models import User, UserGroup
 from starlette.status import HTTP_401_UNAUTHORIZED
+
+from backend.core.api.auth.models import User, UserGroup
 
 logger = getLogger(__name__)
 

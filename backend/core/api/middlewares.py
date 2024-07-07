@@ -3,13 +3,14 @@ import logging
 import time
 from uuid import uuid4
 
+from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
+from starlette.requests import Request
+
 from backend.core.api.request_id_var import (
     get_request_id,
     reset_request_id,
     set_request_id,
 )
-from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
-from starlette.requests import Request
 
 logger = logging.getLogger(__name__)
 

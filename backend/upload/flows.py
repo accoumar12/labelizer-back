@@ -156,3 +156,4 @@ def upload_data(file_in_memory: io.BytesIO, db: Session = Depends(get_db)) -> No
         uploaded_images_path,
     )
     shutil.rmtree(tmp_path)
+    logging.info("Temporary files removed.")
