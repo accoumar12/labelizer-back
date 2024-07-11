@@ -22,7 +22,9 @@ class TripletBase(Base):
 
     # This method is used to convert the object to a dictionary, useful for retrieving the csv when we download the database
     def to_dict(self) -> dict:
-        return {c.key: getattr(self, c.key) for c in self.__table__.columns}
+        return {
+            column.key: getattr(self, column.key) for column in self.__table__.columns
+        }
 
     # We need to use the @declared_attr decorator to be able to use the relationships in the subclasses
     @declared_attr

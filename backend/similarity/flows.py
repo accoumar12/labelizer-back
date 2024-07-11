@@ -1,9 +1,10 @@
 from fastapi import Depends, HTTPException
+from sqlalchemy import select, text
+from sqlalchemy.orm import Session
+
 from backend.core.database.manage import get_db
 from backend.items import crud
 from backend.items.models import Item
-from sqlalchemy import select, text
-from sqlalchemy.orm import Session
 
 
 def compute_similarity_score(

@@ -4,6 +4,7 @@ from typing import TYPE_CHECKING
 
 import pandas as pd
 from fastapi import HTTPException, status
+
 from backend.utils import logger
 
 if TYPE_CHECKING:
