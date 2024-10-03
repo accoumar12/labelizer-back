@@ -4,6 +4,8 @@
 
 Architecture choices inspired by [this FastAPI tutorial](<https://fastapi.tiangolo.com/tutorial/sql-databases/>), [Netflix Dispatch project](https://github.com/Netflix/dispatch).
 
+A similarity service powered by [pgvector](https://github.com/pgvector/pgvector) has been developed.
+
 ## Triplets
 
 The app will deal with two kind of triplets, which are stored in two different tables:
