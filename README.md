@@ -15,6 +15,8 @@ The app will deal with two kind of triplets, which are stored in two different t
 
 When we want to reference to both triplets and validation triplets, we use the reference 'all triplets'.
 
+Triplets are loaded from the application. An example of datapack can be found in `data_example/test_data.zip`.
+
 ## Database diagram
 
 ![db_diagram](./references/assets/drawSQL-image-export-2024-07-14.png)
