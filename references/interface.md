@@ -7,7 +7,6 @@ Details of the interface used.
 
 app = FastAPI()
 
-
 @dataclass
 class LabelizerPairsResponse:
     request_id: str
@@ -15,10 +14,9 @@ class LabelizerPairsResponse:
     left_id: str
     right_id: str
 
-
 @app.get('/api/labelizer/pairs')
 def make_labelizer_pairs(user_id: str) -> LabelizerPairsResponse:
-    
+
     # todo generate pairs
     
     return LabelizerPairsResponse(
@@ -28,12 +26,10 @@ def make_labelizer_pairs(user_id: str) -> LabelizerPairsResponse:
         right_id='right_id',
     )
 
-
 @app.post('/api/labelizer/pairs')
 def set_labelizer_pairs(user_id: str, request_id: str = Form(), label: SelectedItemType = Form()) -> None:
-    
+
     # todo store selected ref with selected id
-    
 
 @app.get("/api/labelizer/images/{image_id}")
 def get_image(user_id: str, image_id: str):
@@ -43,13 +39,11 @@ def get_image(user_id: str, image_id: str):
 
 table name: triplet_labeled
 
-
 class SelectedItemType(StrEnum):
     LEFT = 'left'
     RIGHT = 'right'
     NEITHER = 'neither'
     BOTH = 'both'
-
 
 @dataclass
 class TripletLabeled:
@@ -59,5 +53,5 @@ class TripletLabeled:
     right_id: str
     label: SelectedItemType | None  = None
     user_id: str | None = None
-    
+
 select * from triplet_labeled where label is not null limit 1

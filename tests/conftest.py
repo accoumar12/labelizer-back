@@ -18,7 +18,7 @@ def db():
     drop_all_tables(test_engine)
 
 
-# The autouse parameter makes the fixture run for every test function
+# The autouse parameter makes the fixture run for every test function without calling it
 @pytest.fixture(autouse=True)
 def session(db):
     session = TestSession()

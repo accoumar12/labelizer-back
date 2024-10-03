@@ -12,3 +12,7 @@ The app will deal with two kind of triplets, which are stored in two different t
 - The triplets located in the "validation triplets" table.
 
 When we want to reference to both triplets and validation triplets, we use the reference 'all triplets'.
+
+## Database diagram
+
+![db_diagram](./references/assets/drawSQL-image-export-2024-07-14.png)
