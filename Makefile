@@ -2,9 +2,9 @@
 run:
 	python main.py
 
-## Delete the database (useful for testing)
-delete_db:
-	rm -rf data/labelizer.db
+## Run the tests
+test:
+	pytest tests
 #################################################################################
 # Self Documenting Commands                                                     #
 #################################################################################

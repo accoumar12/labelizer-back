@@ -1,20 +1,39 @@
 version: '3'
-name: 'labelizer'
 services:
   back:
     build:
       context: ..
       dockerfile: docker/Dockerfile
       target: production
-    command: gunicorn --workers 3 --worker-class uvicorn.workers.UvicornWorker --bind 0.0.0.0:42042 labelizer.core.api.fast_api_app:app
+    command: gunicorn --workers 3 --worker-class uvicorn.workers.UvicornWorker --bind 0.0.0.0:42042 backend.core.api.fast_api_app:app
     ports:
       - 42042:42042
     environment:
-      ROOT_PATH: /app/data
-      DEV_MOD: 1
+      - WORKSPACE_DIR
+      - DEV_MOD
+      - DB_HOST
+      - DB_PORT
+      - DB_NAME
+      - DB_SCHEMA
+      - DB_USER
+      - DB_PASSWORD
+    depends_on:
+      - postgres
     volumes:
       - workspace-data:/app/data
 
+  postgres:
+    image: postgres:16.2
+    restart: always
+    environment:
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./docker/initdb_scripts:/docker-entrypoint-initdb.d
+      - pgdata:/var/lib/postgresql/data
 
 volumes:
   workspace-data:
+  pgdata:

@@ -1,11 +1,20 @@
-# Labelizer backend
-
-## Motivation
-
-The purpose of this app is to provide a Tinder-like experience for labeling data triplets. An anchor is presented, and the user selects between two options to determine which one is the most "similar" to the anchor in terms of similarity. There is also a tab ("validation") to compare different iterations of the embedding model.
+# backend
 
 ## Architecture
 
-Architecture choices inspired by the FastAPI tutorial: <https://fastapi.tiangolo.com/tutorial/sql-databases/>
+Architecture choices inspired by [this FastAPI tutorial](<https://fastapi.tiangolo.com/tutorial/sql-databases/>), [Netflix Dispatch project](https://github.com/Netflix/dispatch).
 
-For finding the nearest neighbor embedding, a service based on [pgvector](https://github.com/pgvector/pgvector) has been developed.
+A similarity service powered by [pgvector](https://github.com/pgvector/pgvector) has been developed.
+
+## Triplets
+
+The app will deal with two kind of triplets, which are stored in two different tables:
+
+- The triplets located in the "triplets" table. They are the triplets coming from a single model that need to be labeled by the user of the app, to know which one of the proposition is closest to the anchor proposition, which is located at the center. They are the default triplets.
+- The triplets located in the "validation triplets" table.
+
+When we want to reference to both triplets and validation triplets, we use the reference 'all triplets'.
+
+## Database diagram
+
+![db_diagram](./references/assets/drawSQL-image-export-2024-07-14.png)
