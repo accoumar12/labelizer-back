@@ -1,22 +1,28 @@
-# backend
+# Backend
 
-## Architecture
+## Introduction
 
-Architecture choices inspired by [this FastAPI tutorial](<https://fastapi.tiangolo.com/tutorial/sql-databases/>), [Netflix Dispatch project](https://github.com/Netflix/dispatch).
+This is the backend for the triplet labelizer app. This application provides an intuitive interface for labeling triplets.
+A triplet is a set of three elements, typically used in machine learning and data annotation tasks. An anchor serves as the reference point, a positive element is similar to the anchor, and a negative element is dissimilar to the anchor.
 
-A similarity service powered by [pgvector](https://github.com/pgvector/pgvector) has been developed.
+We used triplets for [triplet loss-based](https://en.wikipedia.org/wiki/Triplet_loss) training of a 3D encoder deep learning model for CAD designs.
 
-## Triplets
+### Labeling Tab
 
-The app will deal with two kind of triplets, which are stored in two different tables:
+The main tab is used to retrieve labeled triplets that will be used to train a model.
 
-- The triplets located in the "triplets" table. They are the triplets coming from a single model that need to be labeled by the user of the app, to know which one of the proposition is closest to the anchor proposition, which is located at the center. They are the default triplets.
-- The triplets located in the "validation triplets" table.
+![labelling](./references/assets/labelling.png)
 
-When we want to reference to both triplets and validation triplets, we use the reference 'all triplets'.
+### Validation Tab
 
-Triplets are loaded from the application. An example of datapack can be found in `data_example/test_data.zip`.
+A validation tab has been added to compare the performance across different model iterations. From the user's perspective, the task remains the same: they must choose the design most similar to the one displayed in the center. However, there is no concept of positive or negative in this context. The user provides an assessment of the model's quality.
 
-## Database diagram
+![validation](./references/assets/validation.png)
 
-![db_diagram](./references/assets/drawSQL-image-export-2024-07-14.png)
+### Database configuration Tab
+
+This tab is used to easily interact with the db, like inserting new triplets or retrieving the results.
+
+## Development
+
+General development documentation: [development.md](./development.md).

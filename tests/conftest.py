@@ -27,21 +27,21 @@ def session(db):
     session.rollback()
 
 
-@pytest.fixture()
+@pytest.fixture
 def item(session):
     session.add(test_item)
     session.commit()
     return test_item
 
 
-@pytest.fixture()
+@pytest.fixture
 def triplet(session):
     session.add(test_triplet)
     session.commit()
     return test_triplet
 
 
-@pytest.fixture()
+@pytest.fixture
 def validation_triplet(session):
     session.add(test_validation_triplet)
     session.commit()
