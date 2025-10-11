@@ -1,5 +1,3 @@
-# Backend
-
 ## Introduction
 
 This is the backend for the triplet labelizer app. This application provides an intuitive interface for labeling triplets.
