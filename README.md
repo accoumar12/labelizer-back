@@ -1,5 +1,7 @@
 ## Introduction
 
+https://github.com/user-attachments/assets/51cbe763-9a45-43dd-b0f9-c8ccd052451a
+
 This is the backend for the triplet labelizer app. This application provides an intuitive interface for labeling triplets. The frontend can be found [here](https://github.com/accoumar12/labelizer-front).
 
 A triplet is a set of three elements, typically used in machine learning and data annotation tasks. An anchor serves as the reference point, a positive element is similar to the anchor, and a negative element is dissimilar to the anchor.
