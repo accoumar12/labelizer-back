@@ -26,5 +26,5 @@ npm run dev
 ### Play
 
 - Go to `http://localhost:5173/db`.
-- Upload sample data located in `data_example/test_data.zip`, in the **Upload Database** section.
+- Upload sample data located in `test_data/test_data.zip`, in the **Upload Database** section.
 - Play with the data in the **Labelling** and **Validation** tabs!
