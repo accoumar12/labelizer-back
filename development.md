@@ -9,7 +9,7 @@ cd docker
 docker compose up
 ```
 
-NOTE: If you see a `psycopg2.errors.UniqueViolation` error, do this:
+NOTE: If you see a `psycopg2.errors.UniqueViolation` or `psycopg2.OperationalError` error, do this (possibly a few times!):
 
 ```bash
 docker compose down
